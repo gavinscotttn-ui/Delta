@@ -40,17 +40,17 @@ jobs:
           $h = @{ 'X-Praxis-Token' = $tok }
           $st = Invoke-RestMethod "${url}api/state" -Headers $h
           Write-Host "hotkeys:" ($st.hotkeys | ConvertTo-Json -Compress) "audio:" ($st.audio | ConvertTo-Json -Compress)
-          Invoke-RestMethod -Method Post "${url}api/run/panic" -Headers $h | Out-Null
+          Invoke-RestMethod -Method Post "${url}api/run/switch" -Headers $h | Out-Null
           Start-Sleep -Seconds 4
           $st = Invoke-RestMethod "${url}api/state" -Headers $h
-          if ($st.active -notcontains 'panic') { Write-Host 'panic did not register as active'; $st.log | Select-Object -Last 15 | Format-Table -AutoSize | Out-String -Width 300; exit 1 }
-          if (-not (Get-Process notepad -ErrorAction SilentlyContinue)) { Write-Host 'panic did not open notepad'; exit 1 }
+          if ($st.active -notcontains 'switch') { Write-Host 'switch did not register as active'; $st.log | Select-Object -Last 15 | Format-Table -AutoSize | Out-String -Width 300; exit 1 }
+          if (-not (Get-Process notepad -ErrorAction SilentlyContinue)) { Write-Host 'switch did not open notepad'; exit 1 }
           Invoke-RestMethod -Method Post "${url}api/restore" -Headers $h | Out-Null
           for ($i = 0; $i -lt 10; $i++) { Invoke-RestMethod "${url}api/state" -Headers $h | Out-Null; Start-Sleep -Milliseconds 300 }
           $st = Invoke-RestMethod "${url}api/state" -Headers $h
           $st.log | Select-Object -Last 12 | ForEach-Object { "$($_.level)  $($_.msg)" }
           if ($p.HasExited) { Write-Host 'Praxis died during the test'; Show-Crash; exit 1 }
-          if ($st.active.Count -ne 0) { Write-Host 'restore did not clear panic'; exit 1 }
+          if ($st.active.Count -ne 0) { Write-Host 'return did not clear switch'; exit 1 }
           Write-Host ("Memory: {0:N1} MB working set" -f ((Get-Process -Id $p.Id).WorkingSet64 / 1MB))
           Stop-Process -Id $p.Id
           Write-Host 'SMOKE OK'

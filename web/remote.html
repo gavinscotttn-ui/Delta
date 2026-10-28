@@ -3,86 +3,91 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0d0d12">
+<meta name="theme-color" content="#F2F2F7">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Praxis Remote</title>
+<title>Praxis</title>
 <link rel="icon" href="/icon.png">
 <link rel="apple-touch-icon" href="/icon.png">
 <style>
-:root{--bg:#0d0d12;--panel:#16161d;--line:#2a2a36;--text:#f2f2f7;--muted:#9a9aab;--brand:#D7036A;--ok:#2fbf71;--err:#ff5d5d;color-scheme:dark}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 "Segoe UI",system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}
-body{min-height:100vh;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
-header{display:flex;align-items:center;gap:10px;padding:14px 0}
-header img{width:34px;height:34px}
-header h1{font-size:17px;letter-spacing:.2em;margin:0 auto 0 0}
-.state{font-size:13px;color:var(--muted)}
-button{font:inherit;color:inherit;cursor:pointer}
-:focus-visible{outline:2px solid #7aa2ff;outline-offset:2px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
-.tile{aspect-ratio:1/1;border:0;border-radius:20px;background:linear-gradient(160deg,var(--c),color-mix(in srgb,var(--c) 45%,#0d0d12));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:700;padding:10px;text-align:center}
+:root{--bg:#F2F2F7;--card:#fff;--text:#000;--sub:#8E8E93;--fill:rgba(118,118,128,.12);--accent:#D7036A;--red:#FF3B30;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#000;--card:#1C1C1E;--text:#fff;--fill:rgba(118,118,128,.24);--accent:#FF2D87;color-scheme:dark}}
+*{box-sizing:border-box;margin:0}
+html,body{background:var(--bg);color:var(--text);font:16px/1.4 -apple-system,"SF Pro Text","Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{padding:env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 16px)}
+header{display:flex;align-items:center;gap:10px;padding:16px 4px}
+header img{width:28px;height:28px}
+header h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-right:auto}
+.state{font-size:14px;color:var(--sub)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.tile{background:var(--card);border-radius:14px;padding:16px;min-height:110px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left;transition:transform .1s}
 .tile:active{transform:scale(.96)}
-.tile.active{box-shadow:0 0 0 3px #fff}
-.tile span:first-child{font-size:46px;line-height:1}
-.restore{width:100%;margin:16px 0 24px;border:0;border-radius:16px;padding:16px;font-weight:800;background:linear-gradient(135deg,#1f9d55,#2fbf71);color:#fff}
-form{max-width:340px;margin:12vh auto 0;display:flex;flex-direction:column;gap:12px;text-align:center}
-input{font:inherit;font-size:24px;letter-spacing:.3em;text-align:center;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--text)}
-.go{padding:14px;border:0;border-radius:14px;background:var(--brand);color:#fff;font-weight:700}
-.err{color:var(--err);min-height:1.2em}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#23232e;border:1px solid var(--line);border-radius:12px;padding:10px 16px}
+.tile.active{box-shadow:inset 0 0 0 2px var(--c)}
+.sq{width:36px;height:36px;border-radius:9px;background:var(--c);color:#fff;display:grid;place-items:center;font-weight:600}
+.nm{font-weight:500}
+.ret{display:block;width:100%;margin:20px 0;height:50px;border-radius:14px;background:var(--accent);color:#fff;font-weight:600}
+form{max-width:320px;margin:14vh auto 0;display:flex;flex-direction:column;gap:14px;text-align:center}
+form h2{font-size:22px;font-weight:600}
+form p{color:var(--sub);font-size:14px}
+input{font:inherit;font-size:22px;letter-spacing:.3em;text-align:center;padding:14px;border-radius:12px;border:0;background:var(--card);color:var(--text);outline:none}
+.go{height:50px;border-radius:12px;background:var(--accent);color:#fff;font-weight:600}
+.err{color:var(--red);min-height:1.2em;font-size:14px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--card);border-radius:12px;padding:10px 16px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
 </style>
 </head>
 <body>
-<header><img src="/logo.png" alt=""><h1>PRAXIS</h1><span class="state" id="state"></span></header>
+<header><img src="/logo.png" alt=""><h1>Praxis</h1><span class="state" id="state"></span></header>
 <form id="login" hidden>
-  <h2 style="margin:0">Enter PIN</h2>
-  <label for="pin" style="color:var(--muted)">The PIN set in Praxis › Settings on your PC</label>
+  <h2>Enter PIN</h2>
+  <p>The PIN you chose in Praxis on your PC.</p>
+  <label for="pin" style="position:absolute;left:-9999px">PIN</label>
   <input id="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="32" required>
-  <button class="go">Unlock deck</button>
+  <button class="go">Unlock</button>
   <p class="err" id="err" role="alert"></p>
 </form>
 <div id="deck" hidden>
   <div class="grid" id="grid"></div>
-  <button class="restore" id="restore">↩ Restore everything</button>
+  <button class="ret" id="restore">Return</button>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <script>
 "use strict";
 const $ = s=>document.querySelector(s);
 async function call(method, path, body){
-  const opt = {method, headers:{'X-Praxis-Remote':'1'}, credentials:'same-origin'};
-  if (body){ opt.headers['Content-Type']='application/json'; opt.body=JSON.stringify(body); }
-  const r = await fetch(path, opt);
+  const o = {method, headers:{'X-Praxis-Remote':'1'}, credentials:'same-origin'};
+  if (body){ o.headers['Content-Type']='application/json'; o.body=JSON.stringify(body); }
+  const r = await fetch(path, o);
   const d = await r.json().catch(()=>({}));
-  if (!r.ok){ const e = new Error(d.error||('HTTP '+r.status)); e.status=r.status; throw e; }
+  if (!r.ok){ const e = new Error(d.error||('Error '+r.status)); e.status=r.status; throw e; }
   return d;
 }
-function toast(t){ const el=$('#toast'); el.textContent=t; el.hidden=false; clearTimeout(el._t); el._t=setTimeout(()=>el.hidden=true,1800); }
+function toast(t){ const el=$('#toast'); el.textContent=t; el.hidden=false; clearTimeout(el._t); el._t=setTimeout(()=>el.hidden=true,1600); }
 function showLogin(){ $('#deck').hidden=true; $('#login').hidden=false; $('#pin').focus(); }
 let sig='';
 async function load(){
   try{
     const d = await call('GET','/r/macros');
     $('#login').hidden=true; $('#deck').hidden=false;
-    $('#state').textContent = d.audio && d.audio.available ? (d.audio.muted?'🔇 muted':'🔊 '+d.audio.volume+'%') : '';
+    $('#state').textContent = d.audio && d.audio.available ? (d.audio.muted ? 'Muted' : d.audio.volume+'%') : '';
     const s = JSON.stringify(d.macros); if (s===sig) return; sig=s;
     $('#grid').replaceChildren(...d.macros.map(m=>{
       const b = document.createElement('button');
       b.className='tile'+(m.Active?' active':''); b.style.setProperty('--c', m.Color);
-      const i=document.createElement('span'); i.textContent=m.Icon||'⚡'; i.setAttribute('aria-hidden','true');
-      const n=document.createElement('span'); n.textContent=m.Name;
-      b.append(i,n);
-      b.onclick = async ()=>{ try{ await call('POST','/r/run/'+encodeURIComponent(m.ID)); if (navigator.vibrate) navigator.vibrate(30); toast(m.Name); setTimeout(load,600);}catch(e){ e.status===401?showLogin():toast(e.message); } };
+      const q=document.createElement('span'); q.className='sq'; q.textContent=(m.Name||'?').trim().charAt(0).toUpperCase(); q.setAttribute('aria-hidden','true');
+      const n=document.createElement('span'); n.className='nm'; n.textContent=m.Name;
+      b.append(q,n);
+      b.onclick = async ()=>{ try{ await call('POST','/r/run/'+encodeURIComponent(m.ID)); if (navigator.vibrate) navigator.vibrate(20); toast(m.Name); setTimeout(load,500);}catch(e){ e.status===401?showLogin():toast(e.message); } };
       return b;
     }));
-  }catch(e){ if (e.status===401) showLogin(); else $('#state').textContent='offline'; }
+  }catch(e){ if (e.status===401) showLogin(); else $('#state').textContent='Offline'; }
 }
 $('#login').onsubmit = async e=>{
   e.preventDefault(); $('#err').textContent='';
   try{ await call('POST','/r/login',{pin:$('#pin').value}); $('#pin').value=''; sig=''; load(); }
   catch(err){ $('#err').textContent = err.message; }
 };
-$('#restore').onclick = async ()=>{ try{ await call('POST','/r/restore'); toast('Restored'); setTimeout(load,600);}catch(e){ e.status===401?showLogin():toast(e.message);} };
+$('#restore').onclick = async ()=>{ try{ await call('POST','/r/restore'); toast('Returned'); setTimeout(load,500);}catch(e){ e.status===401?showLogin():toast(e.message);} };
 load(); setInterval(()=>{ if(!document.hidden && !$('#deck').hidden) load(); }, 3000);
 </script>
 </body>

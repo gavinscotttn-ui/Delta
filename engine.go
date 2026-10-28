@@ -50,6 +50,7 @@ type Platform interface {
 	SetRunAtStartup(enabled bool) error
 	Notify(title, msg string)
 	Prewarm(macros []Macro)
+	SetTrayVisible(visible bool)
 }
 
 // ---- activity log ----
@@ -64,18 +65,32 @@ type Logger struct {
 	mu   sync.Mutex
 	ring []LogEntry
 	file *os.File
+	dir  string
 }
 
-func NewLogger(dir string) *Logger {
-	l := &Logger{}
-	p := filepath.Join(dir, "praxis.log")
+// NewLogger keeps history in memory only; SetPersist(true) also appends to praxis.log.
+func NewLogger(dir string) *Logger { return &Logger{dir: dir} }
+
+func (l *Logger) SetPersist(on bool) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if !on {
+		if l.file != nil {
+			_ = l.file.Close()
+			l.file = nil
+		}
+		return
+	}
+	if l.file != nil || l.dir == "" {
+		return
+	}
+	p := filepath.Join(l.dir, "praxis.log")
 	if st, err := os.Stat(p); err == nil && st.Size() > 1<<20 {
 		_ = os.Rename(p, p+".1")
 	}
 	if f, err := os.OpenFile(p, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600); err == nil {
 		l.file = f
 	}
-	return l
 }
 
 func (l *Logger) add(level, format string, args ...any) {
@@ -83,8 +98,8 @@ func (l *Logger) add(level, format string, args ...any) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.ring = append(l.ring, e)
-	if len(l.ring) > 300 {
-		l.ring = l.ring[len(l.ring)-300:]
+	if len(l.ring) > 200 {
+		l.ring = l.ring[len(l.ring)-200:]
 	}
 	if l.file != nil {
 		fmt.Fprintf(l.file, "%s [%s] %s\n", e.Time.Format(time.RFC3339), level, e.Msg)
@@ -170,7 +185,7 @@ func (e *Engine) Trigger(id, source string) error {
 		e.log.Info("%s → %s done in %d ms", source, m.Name, ms)
 	}
 	if cfg.Settings.NotifyOnRun {
-		e.plat.Notify("Praxis", m.Name)
+		e.plat.Notify("", m.Name)
 	}
 	return err
 }

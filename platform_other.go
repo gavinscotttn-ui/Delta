@@ -117,6 +117,7 @@ func (p *simPlatform) Identify()                  { p.app.log.Info("[sim] identi
 func (p *simPlatform) SetRunAtStartup(bool) error { return errors.New("only supported on Windows") }
 func (p *simPlatform) Notify(title, msg string)   { p.app.log.Info("[sim] notify: %s", msg) }
 func (p *simPlatform) Prewarm(macros []Macro)     {}
+func (p *simPlatform) SetTrayVisible(bool)        {}
 func acquireSingleInstance() bool                 { return true }
 func openDeck(u string)                           { fmt.Println("Deck:", u) }
 func showError(msg string)                        {}

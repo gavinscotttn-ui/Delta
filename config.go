@@ -29,6 +29,8 @@ type Settings struct {
 	RunAtStartup     bool           `json:"runAtStartup"`
 	OpenDeckOnLaunch bool           `json:"openDeckOnLaunch"`
 	NotifyOnRun      bool           `json:"notifyOnRun"`
+	HideTray         bool           `json:"hideTray"` // discreet: no tray icon; relaunch the exe to open the deck
+	KeepLog          bool           `json:"keepLog"`  // write activity history to disk (off: memory only)
 	PrewarmApps      bool           `json:"prewarmApps"`
 	Port             int            `json:"port"`
 	Remote           RemoteSettings `json:"remote"`
@@ -101,7 +103,7 @@ func defaultConfig() Config {
 		},
 		Macros: []Macro{
 			{
-				ID: "panic", Name: "Panic", Icon: "🚨", Color: "#D7036A", Hotkey: "Pause",
+				ID: "switch", Name: "Switch", Icon: "monitor", Color: "#D7036A", Hotkey: "Pause",
 				Toggle: true, Undoable: true, Remote: true,
 				Actions: []Action{
 					{Type: "mute"},
@@ -112,27 +114,35 @@ func defaultConfig() Config {
 				},
 			},
 			{
-				ID: "restore", Name: "All clear", Icon: "✅", Color: "#1F9D55", Hotkey: "Shift+Pause", Remote: true,
+				ID: "return", Name: "Return", Icon: "return", Color: "#34C759", Hotkey: "Shift+Pause", Remote: true,
 				Actions: []Action{{Type: "restore"}},
 			},
 			{
-				ID: "mute", Name: "Mute toggle", Icon: "🔇", Color: "#3B5BDB", Hotkey: "Ctrl+Alt+M", Remote: true,
+				ID: "mute", Name: "Sound", Icon: "volume-off", Color: "#007AFF", Hotkey: "Ctrl+Alt+M", Remote: true,
 				Actions: []Action{{Type: "toggle_mute"}},
 			},
 			{
-				ID: "mic", Name: "Mic toggle", Icon: "🎙️", Color: "#7048E8", Hotkey: "Ctrl+Alt+N", Remote: true,
+				ID: "mic", Name: "Microphone", Icon: "mic-off", Color: "#5856D6", Hotkey: "Ctrl+Alt+N", Remote: true,
 				Actions: []Action{{Type: "mic_toggle"}},
 			},
 			{
-				ID: "playpause", Name: "Play / Pause", Icon: "⏯️", Color: "#0C8599", Hotkey: "", Remote: true,
+				ID: "playpause", Name: "Play / Pause", Icon: "play", Color: "#FF9500", Remote: true,
 				Actions: []Action{{Type: "media", Target: "play_pause"}},
 			},
 			{
-				ID: "lockdown", Name: "Lockdown", Icon: "🔒", Color: "#495057", Hotkey: "Ctrl+Alt+L", Remote: true,
+				ID: "lock", Name: "Lock", Icon: "lock", Color: "#8E8E93", Hotkey: "Ctrl+Alt+L", Remote: true,
 				Actions: []Action{{Type: "mute"}, {Type: "mic_mute"}, {Type: "lock"}},
 			},
 		},
 	}
+}
+
+// iconNames are the line icons the deck can draw. Anything else (e.g. emoji
+// from an older config) is cleared and the tile shows the macro's initial.
+var iconNames = map[string]bool{
+	"bolt": true, "eye-off": true, "volume-off": true, "volume": true, "mic-off": true, "play": true,
+	"lock": true, "briefcase": true, "moon": true, "monitor": true, "keyboard": true, "globe": true,
+	"mail": true, "phone": true, "chart": true, "return": true, "star": true,
 }
 
 func randomID() string {
@@ -184,8 +194,8 @@ func (c *Config) Normalize() error {
 		if err := checkLen("name", m.Name, 80); err != nil {
 			return fmt.Errorf("%q: %w", m.Name, err)
 		}
-		if err := checkLen("icon", m.Icon, 32); err != nil {
-			return fmt.Errorf("%q: %w", m.Name, err)
+		if !iconNames[m.Icon] {
+			m.Icon = ""
 		}
 		if m.Color == "" || !validColor(m.Color) {
 			m.Color = "#D7036A"

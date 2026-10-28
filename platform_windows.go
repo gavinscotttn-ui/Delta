@@ -128,7 +128,7 @@ func (p *winPlatform) Notify(title, msg string) {
 	}
 	nid := p.nid()
 	nid.UFlags = NIF_INFO
-	copyU16(nid.SzInfoTitle[:], title)
+	copyU16(nid.SzInfoTitle[:], title) // empty title keeps toasts anonymous
 	copyU16(nid.SzInfo[:], msg)
 	nid.DwInfoFlags = NIIF_USER | NIIF_NOSOUND
 	pShellNotifyIconW.Call(NIM_MODIFY, uintptr(unsafe.Pointer(&nid)))
@@ -240,7 +240,7 @@ func (p *winPlatform) addTray() {
 	n.UFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP
 	n.UCallbackMessage = WM_APP_TRAY
 	n.HIcon = p.icon
-	copyU16(n.SzTip[:], "Praxis — right-click for macros")
+	copyU16(n.SzTip[:], "Praxis")
 	pShellNotifyIconW.Call(NIM_ADD, uintptr(unsafe.Pointer(&n)))
 }
 
@@ -292,8 +292,19 @@ func platformInit(app *App) error {
 	if err := p.setupWindow(); err != nil {
 		return fmt.Errorf("could not create the tray window: %w", err)
 	}
-	p.addTray()
+	if !app.cfg.Get().Settings.HideTray {
+		p.addTray()
+	}
 	return nil
+}
+
+func (p *winPlatform) SetTrayVisible(visible bool) {
+	p.invoke(func() {
+		p.removeTray()
+		if visible {
+			p.addTray()
+		}
+	})
 }
 
 func runMain(app *App) {
@@ -309,12 +320,8 @@ func runMain(app *App) {
 	if cfg.Settings.PrewarmApps {
 		go p.Prewarm(cfg.Macros)
 	}
-	if !app.minimized {
-		if cfg.Settings.OpenDeckOnLaunch {
-			openDeck(app.srv.URL())
-		} else {
-			p.Notify("Praxis is ready", "Praxis is running in the tray. Click the icon to open the deck.")
-		}
+	if !app.minimized && cfg.Settings.OpenDeckOnLaunch {
+		openDeck(app.srv.URL())
 	}
 
 	var msg MSG
@@ -380,7 +387,9 @@ func (p *winPlatform) wndProc(hwnd uintptr, msg uint32, wp, lp uintptr) (ret uin
 		return 0
 	}
 	if p.tbMsg != 0 && uintptr(msg) == p.tbMsg {
-		p.addTray() // Explorer restarted
+		if !p.app.cfg.Get().Settings.HideTray {
+			p.addTray() // Explorer restarted
+		}
 		return 0
 	}
 	r, _, _ := pDefWindowProcW.Call(hwnd, uintptr(msg), wp, lp)
@@ -394,14 +403,14 @@ func (p *winPlatform) showMenu() {
 	add := func(flags uintptr, id int, text string) {
 		pAppendMenuW.Call(m, flags, uintptr(id), uintptr(unsafe.Pointer(u16(text))))
 	}
-	add(MF_STRING, cmdOpen, "Open Praxis Deck")
+	add(MF_STRING, cmdOpen, "Open Praxis")
 	add(MF_SEPARATOR, 0, "")
 	n := 0
 	for i, mac := range cfg.Macros {
 		if n >= 15 {
 			break
 		}
-		label := mac.Icon + "  " + mac.Name
+		label := mac.Name
 		if mac.Hotkey != "" {
 			label += "\t" + mac.Hotkey
 		}
@@ -415,7 +424,7 @@ func (p *winPlatform) showMenu() {
 	if len(p.app.eng.ActiveMacros()) == 0 {
 		restoreFlags |= MF_GRAYED
 	}
-	add(restoreFlags, cmdRestore, "Restore everything")
+	add(restoreFlags, cmdRestore, "Return")
 	pauseFlags := uintptr(MF_STRING)
 	if p.app.eng.Paused() {
 		pauseFlags |= MF_CHECKED

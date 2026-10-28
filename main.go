@@ -62,6 +62,10 @@ func main() {
 	if err != nil {
 		log.Warn("%v", err)
 	}
+	// Stay small: return memory to Windows promptly; Praxis is idle almost always.
+	debug.SetGCPercent(50)
+	debug.SetMemoryLimit(48 << 20)
+	log.SetPersist(cfg.Get().Settings.KeepLog)
 	app := &App{dir: dir, cfg: cfg, log: log, minimized: *minimized}
 	app.plat = newPlatform(app)
 	app.eng = NewEngine(cfg, app.plat, log)
@@ -84,7 +88,7 @@ func main() {
 	}()
 	writeDeckURL(dir, app.srv.URL())
 	app.srv.SyncRemote(c)
-	log.Info("Praxis %s started; deck at %s", version, app.srv.URL())
+	log.Info("started")
 
 	runMain(app) // blocks until quit (tray loop on Windows)
 
@@ -97,6 +101,10 @@ func (a *App) configChanged(old, new Config) {
 			a.log.Error("run at startup: %v", err)
 		}
 	}
+	if old.Settings.HideTray != new.Settings.HideTray {
+		a.plat.SetTrayVisible(!new.Settings.HideTray)
+	}
+	a.log.SetPersist(new.Settings.KeepLog)
 	a.srv.SyncRemote(new)
 }
 
