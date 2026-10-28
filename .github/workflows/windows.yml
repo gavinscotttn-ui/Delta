@@ -2,7 +2,6 @@ name: windows-build
 on:
   push:
     branches: ['**']
-    tags: ['v*']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -34,8 +33,10 @@ jobs:
 
   release:
     # Only publish once the Windows build and self-test above have passed.
+    # Every push to the release branch becomes the new "latest" release, so
+    # https://github.com/<owner>/<repo>/releases/latest/download/Praxis.exe always works.
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/claude/pensive-einstein-ei4zkk' || github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -46,6 +47,9 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: Praxis.exe
+          tag_name: v1.0.${{ github.run_number }}
+          name: Praxis 1.0.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
           make_latest: true
           body: |
             **Download `Praxis.exe` below, then double-click it.** No installer or admin rights needed; it lives in the system tray.
