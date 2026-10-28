@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"time"
 )
@@ -37,6 +38,14 @@ func main() {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		fatal("Praxis could not create its settings folder:\n" + err.Error())
 	}
+	setupCrashLog(dir)
+	defer func() {
+		if r := recover(); r != nil {
+			msg := fmt.Sprintf("%v\n\n%s", r, debug.Stack())
+			_ = os.WriteFile(filepath.Join(dir, "crash.log"), []byte(msg), 0o600)
+			fatal("Praxis hit a problem and has to close:\n\n" + fmt.Sprint(r) + "\n\nDetails: " + filepath.Join(dir, "crash.log"))
+		}
+	}()
 	if !acquireSingleInstance() {
 		// Another Praxis is running: just bring its deck up.
 		if u := readDeckURL(dir); u != "" {
@@ -97,6 +106,9 @@ func (a *App) shutdown() {
 	_ = a.http.Shutdown(ctx)
 	a.srv.SyncRemote(Config{})
 	_ = os.Remove(filepath.Join(a.dir, "deck.url"))
+	if st, err := os.Stat(filepath.Join(a.dir, "crash.log")); err == nil && st.Size() == 0 {
+		_ = os.Remove(filepath.Join(a.dir, "crash.log"))
+	}
 	a.log.Info("Praxis stopped")
 }
 

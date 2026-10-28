@@ -146,6 +146,7 @@ func (e *Engine) Trigger(id, source string) error {
 	}
 	e.runMu.Lock()
 	defer e.runMu.Unlock()
+	defer guard(e.log, "macro "+m.Name)
 
 	if m.Toggle && e.isActive(id) {
 		e.log.Info("%s → %s (toggle off: restoring)", source, m.Name)
@@ -189,6 +190,7 @@ func (e *Engine) isActive(id string) bool {
 func (e *Engine) Restore(source string) {
 	e.runMu.Lock()
 	defer e.runMu.Unlock()
+	defer guard(e.log, "restore")
 	e.log.Info("%s → restore", source)
 	e.restoreLocked()
 }

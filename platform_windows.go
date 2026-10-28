@@ -70,13 +70,11 @@ func (p *winPlatform) Windows() ([]WinInfo, error) {
 
 func (p *winPlatform) Audio() AudioState {
 	var s AudioState
-	m, err := audioGetMute(false)
+	m, v, err := audioGetBoth()
 	if err != nil {
 		s.Error = err.Error()
 	} else {
-		s.Available = true
-		s.Muted = m
-		s.Volume, _ = audioGetVolume()
+		s.Available, s.Muted, s.Volume = true, m, v
 	}
 	if mm, err := audioGetMute(true); err != nil {
 		s.MicError = err.Error()
@@ -287,7 +285,9 @@ func init() { runtime.LockOSThread() }
 func platformInit(app *App) error {
 	p := thePlatform
 	// Physical pixel coordinates on every monitor (the manifest also declares this).
-	pSetProcessDpiAwarenessCtx.Call(^uintptr(3)) // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 (-4)
+	if pSetProcessDpiAwarenessCtx.Find() == nil { // missing before Windows 10 1703
+		pSetProcessDpiAwarenessCtx.Call(^uintptr(3)) // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 (-4)
+	}
 	p.uiThread, _, _ = pGetCurrentThreadId.Call()
 	if err := p.setupWindow(); err != nil {
 		return fmt.Errorf("could not create the tray window: %w", err)
@@ -339,7 +339,13 @@ func runMain(app *App) {
 	pDestroyWindow.Call(p.hwnd)
 }
 
-func (p *winPlatform) wndProc(hwnd uintptr, msg uint32, wp, lp uintptr) uintptr {
+func (p *winPlatform) wndProc(hwnd uintptr, msg uint32, wp, lp uintptr) (ret uintptr) {
+	defer func() {
+		if r := recover(); r != nil {
+			p.app.log.Error("window message %#x fault: %v", msg, r)
+			ret, _, _ = pDefWindowProcW.Call(hwnd, uintptr(msg), wp, lp)
+		}
+	}()
 	switch msg {
 	case WM_HOTKEY:
 		if id, ok := p.hotkeyIDs[int(wp)]; ok {
@@ -477,7 +483,12 @@ func (p *winPlatform) Identify() {
 	})
 }
 
-func (p *winPlatform) overlayProc(hwnd uintptr, msg uint32, wp, lp uintptr) uintptr {
+func (p *winPlatform) overlayProc(hwnd uintptr, msg uint32, wp, lp uintptr) (ret uintptr) {
+	defer func() {
+		if recover() != nil {
+			ret, _, _ = pDefWindowProcW.Call(hwnd, uintptr(msg), wp, lp)
+		}
+	}()
 	if msg == WM_PAINT {
 		var ps PAINTSTRUCT
 		hdc, _, _ := pBeginPaint.Call(hwnd, uintptr(unsafe.Pointer(&ps)))

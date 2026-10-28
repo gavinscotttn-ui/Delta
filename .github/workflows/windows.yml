@@ -26,6 +26,34 @@ jobs:
           go build -o praxis-selftest.exe .
           ./praxis-selftest.exe --selftest
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Real launch smoke test (start exe, drive the API, run Panic, restore)
+        shell: pwsh
+        run: |
+          $env:PRAXIS_HOME = Join-Path $env:RUNNER_TEMP 'praxis-home'
+          $p = Start-Process -FilePath .\Praxis.exe -ArgumentList '--minimized' -PassThru
+          Start-Sleep -Seconds 4
+          function Show-Crash { Get-ChildItem $env:PRAXIS_HOME -Filter *.log | ForEach-Object { "--- $($_.Name)"; Get-Content $_.FullName } }
+          if ($p.HasExited) { Write-Host "Praxis exited at startup (code $($p.ExitCode))"; Show-Crash; exit 1 }
+          $url = (Get-Content (Join-Path $env:PRAXIS_HOME 'deck.url')).Trim()
+          $html = (Invoke-WebRequest $url -UseBasicParsing).Content
+          $tok = [regex]::Match($html, 'praxis-token" content="([0-9a-f]+)"').Groups[1].Value
+          $h = @{ 'X-Praxis-Token' = $tok }
+          $st = Invoke-RestMethod "${url}api/state" -Headers $h
+          Write-Host "hotkeys:" ($st.hotkeys | ConvertTo-Json -Compress) "audio:" ($st.audio | ConvertTo-Json -Compress)
+          Invoke-RestMethod -Method Post "${url}api/run/panic" -Headers $h | Out-Null
+          Start-Sleep -Seconds 4
+          $st = Invoke-RestMethod "${url}api/state" -Headers $h
+          if ($st.active -notcontains 'panic') { Write-Host 'panic did not register as active'; $st.log | Select-Object -Last 15 | Format-Table -AutoSize | Out-String -Width 300; exit 1 }
+          if (-not (Get-Process notepad -ErrorAction SilentlyContinue)) { Write-Host 'panic did not open notepad'; exit 1 }
+          Invoke-RestMethod -Method Post "${url}api/restore" -Headers $h | Out-Null
+          for ($i = 0; $i -lt 10; $i++) { Invoke-RestMethod "${url}api/state" -Headers $h | Out-Null; Start-Sleep -Milliseconds 300 }
+          $st = Invoke-RestMethod "${url}api/state" -Headers $h
+          $st.log | Select-Object -Last 12 | ForEach-Object { "$($_.level)  $($_.msg)" }
+          if ($p.HasExited) { Write-Host 'Praxis died during the test'; Show-Crash; exit 1 }
+          if ($st.active.Count -ne 0) { Write-Host 'restore did not clear panic'; exit 1 }
+          Write-Host ("Memory: {0:N1} MB working set" -f ((Get-Process -Id $p.Id).WorkingSet64 / 1MB))
+          Stop-Process -Id $p.Id
+          Write-Host 'SMOKE OK'
       - uses: actions/upload-artifact@v4
         with:
           name: Praxis

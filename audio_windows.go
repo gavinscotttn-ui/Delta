@@ -105,6 +105,19 @@ func audioSetMute(mic, muted bool) error {
 	return withEndpoint(mic, func(v *comObj) error { return hrErr("SetMute", v.call(vtSetMute, boolArg(muted), 0)) })
 }
 
+// audioGetBoth reads speaker mute and volume in one COM session (cheap status polling).
+func audioGetBoth() (bool, int, error) {
+	var m int32
+	var f float32
+	err := withEndpoint(false, func(v *comObj) error {
+		if err := hrErr("GetMute", v.call(vtGetMute, ptr(&m))); err != nil {
+			return err
+		}
+		return hrErr("GetMasterVolumeLevelScalar", v.call(vtGetMasterVolumeScalar, ptr(&f)))
+	})
+	return m != 0, int(math.Round(float64(f) * 100)), err
+}
+
 func audioGetVolume() (int, error) {
 	var f float32
 	err := withEndpoint(false, func(v *comObj) error {
