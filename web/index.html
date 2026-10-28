@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="praxis-token" content="__PRAXIS_TOKEN__">
+<title>Praxis Deck</title>
+<link rel="icon" href="/icon.png">
+<style>
+:root{
+  --bg:#0d0d12; --panel:#16161d; --panel2:#1d1d26; --line:#2a2a36; --text:#f2f2f7; --muted:#9a9aab;
+  --brand:#D7036A; --brand2:#ff3d94; --ok:#2fbf71; --warn:#f5a524; --err:#ff5d5d; --focus:#7aa2ff;
+  --radius:14px; --shadow:0 10px 30px rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif}
+body{min-height:100vh;background:radial-gradient(1200px 500px at 85% -10%,rgba(215,3,106,.18),transparent 60%),var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* header */
+header{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--line);background:rgba(13,13,18,.85);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand img{width:40px;height:40px}
+.brand h1{margin:0;font-size:20px;letter-spacing:.22em;font-weight:800}
+.brand small{display:block;color:var(--muted);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:600}
+.chip{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;min-height:38px}
+.chip button.icon{background:none;border:0;padding:2px 4px;font-size:18px;border-radius:8px}
+.chip .lbl{color:var(--muted);font-size:13px}
+.chip.bad{border-color:var(--err)}
+.chip.on{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset}
+input[type=range]{accent-color:var(--brand);width:110px}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-weight:600}
+.btn:hover{border-color:#3b3b4c}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:#e8137b}
+.btn.danger{color:var(--err)}
+.btn.ghost{background:none}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.restore{background:linear-gradient(135deg,#1f9d55,#2fbf71);border:0;color:#fff;font-weight:700;border-radius:999px;padding:9px 16px;opacity:.45}
+.restore.live{opacity:1;animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,191,113,.55)}70%{box-shadow:0 0 0 12px rgba(47,191,113,0)}100%{box-shadow:0 0 0 0 rgba(47,191,113,0)}}
+
+main{max-width:1400px;margin:0 auto;padding:22px}
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.toolbar h2{margin:0 auto 0 0;font-size:15px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.banner{background:rgba(245,165,36,.1);border:1px solid rgba(245,165,36,.5);color:#ffd591;padding:10px 14px;border-radius:10px;margin-bottom:14px}
+
+/* deck */
+.deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+.tile{position:relative;aspect-ratio:1/1;border-radius:20px;background:var(--panel);border:1px solid var(--line);overflow:hidden;transition:transform .12s ease,box-shadow .12s ease}
+.tile:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.tile.dragging{opacity:.4}
+.tile.dropzone{outline:2px dashed var(--brand);outline-offset:3px}
+.tile .run{position:absolute;inset:0;border:0;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 70%,#000 0%) 0%,color-mix(in srgb,var(--c) 45%,#0d0d12) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:14px;color:#fff;text-align:center}
+.tile .run:active{transform:scale(.97)}
+.tile .ico{font-size:52px;line-height:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+.tile .nm{font-weight:700;font-size:16px;text-shadow:0 1px 3px rgba(0,0,0,.4);word-break:break-word}
+.tile kbd,.kbd{font:600 12px ui-monospace,Consolas,monospace;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:2px 7px;color:#fff}
+.tile .edit{position:absolute;top:8px;right:8px;z-index:2;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:10px;width:34px;height:34px;font-size:15px;opacity:.75}
+.tile:hover .edit,.tile .edit:focus-visible{opacity:1}
+.tile .flag{position:absolute;top:10px;left:10px;z-index:2;font-size:12px;font-weight:700;background:rgba(0,0,0,.5);border-radius:999px;padding:2px 8px}
+.tile .flag.warn{color:var(--warn)}
+.tile.active{box-shadow:0 0 0 3px #fff,0 0 30px var(--c)}
+.tile.active .flag.act{color:#fff;background:var(--ok)}
+.tile.running .run::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,.18);animation:flash .5s ease-out}
+@keyframes flash{from{opacity:1}to{opacity:0}}
+.tile.add .run{background:transparent;border:2px dashed var(--line);border-radius:20px;color:var(--muted)}
+.tile.add .run:hover{color:var(--text);border-color:var(--brand)}
+
+/* log */
+.log{margin-top:26px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+.log summary{padding:12px 16px;cursor:pointer;font-weight:600;color:var(--muted)}
+.log ol{list-style:none;margin:0;padding:0 16px 14px;max-height:260px;overflow:auto;font:13px/1.6 ui-monospace,Consolas,monospace}
+.log li{border-top:1px solid var(--line);padding:3px 0;color:#cfcfe0}
+.log li.warn{color:#ffd591}.log li.error{color:#ff9b9b}
+.log time{color:var(--muted);margin-right:10px}
+
+/* dialogs */
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:0;width:min(900px,96vw);max-height:92vh;box-shadow:var(--shadow)}
+dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(3px)}
+.dlg-head{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.dlg-head h3{margin:0;font-size:18px;margin-right:auto}
+.dlg-body{padding:18px 20px;overflow:auto;max-height:calc(92vh - 140px)}
+.dlg-foot{display:flex;gap:10px;padding:14px 20px;border-top:1px solid var(--line);background:var(--panel);position:sticky;bottom:0}
+.dlg-foot .spacer{flex:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:700px){.grid2{grid-template-columns:1fr}header{padding:12px}main{padding:14px}}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);font-weight:600}
+input[type=text],input[type=number],input[type=password],select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%}
+textarea{min-height:70px;resize:vertical}
+.check{display:flex;align-items:flex-start;gap:9px;font-size:14px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--brand);margin-top:2px}
+.check small{display:block;color:var(--muted)}
+.swatches{display:flex;gap:7px;flex-wrap:wrap}
+.swatches button{width:28px;height:28px;border-radius:50%;border:2px solid transparent}
+.swatches button[aria-pressed=true]{border-color:#fff}
+.emojis{display:flex;gap:4px;flex-wrap:wrap}
+.iconrow{display:flex;gap:8px;align-items:flex-start}
+.iconrow input{width:60px!important;flex:none;height:76px;text-align:center;font-size:30px;padding:4px}
+.emojis button{background:var(--bg);border:1px solid var(--line);border-radius:8px;font-size:18px;width:36px;height:36px}
+.hk{display:flex;gap:8px}
+.hk input{font-family:ui-monospace,Consolas,monospace;cursor:pointer}
+.hk input.rec{border-color:var(--brand);box-shadow:0 0 0 3px rgba(215,3,106,.3)}
+.section-title{margin:22px 0 10px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+.section-title::after{content:"";flex:1;height:1px;background:var(--line)}
+.steps{display:flex;flex-direction:column;gap:10px}
+.step{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+.step.off{opacity:.5}
+.step-head{display:flex;gap:8px;align-items:center}
+.step-head .num{width:26px;height:26px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.step-head select{flex:1}
+.step-head .btn{padding:6px 9px}
+.step-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+.step-fields .wide{grid-column:1/-1}
+.hint{color:var(--muted);font-size:12.5px;margin:6px 0 0}
+.inline{display:flex;gap:6px}
+.inline input{flex:1}
+.mons{position:relative;height:120px;background:var(--bg);border:1px solid var(--line);border-radius:10px;margin-top:4px}
+.mons button{position:absolute;border:2px solid var(--line);background:var(--panel2);border-radius:6px;color:var(--text);font-weight:800;font-size:18px;display:grid;place-items:center}
+.mons button[aria-pressed=true]{background:var(--brand);border-color:#fff;color:#fff}
+.picker{position:fixed;inset:auto;z-index:50}
+.pick-list{list-style:none;margin:0;padding:0;max-height:50vh;overflow:auto}
+.pick-list button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 4px}
+.pick-list button:hover{background:var(--panel2)}
+.pick-list small{display:block;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.urls{white-space:pre-line;font:13px ui-monospace,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;word-break:break-all}
+.toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:100;pointer-events:none;width:min(520px,92vw)}
+.toast{background:#23232e;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:10px;padding:10px 14px;box-shadow:var(--shadow);animation:up .2s ease}
+.toast.ok{border-left-color:var(--ok)}.toast.err{border-left-color:var(--err)}
+@keyframes up{from{transform:translateY(10px);opacity:0}}
+.err-text{color:var(--err);font-size:13px;margin-top:8px;min-height:1em}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><img src="/logo.png" alt=""><div><h1>PRAXIS</h1><small>Control Deck</small></div></div>
+  <div class="chip" id="spkChip">
+    <button class="icon" id="muteBtn" aria-label="Mute speakers">🔊</button>
+    <label class="sr" for="vol">Speaker volume</label>
+    <input type="range" id="vol" min="0" max="100" step="1">
+    <span class="lbl" id="volLbl">–</span>
+  </div>
+  <div class="chip" id="micChip"><button class="icon" id="micBtn" aria-label="Mute microphone">🎙️</button><span class="lbl" id="micLbl">Mic</span></div>
+  <button class="chip btn ghost" id="monBtn" title="Flash a number on every screen">🖥️ <span id="monLbl">Screens</span></button>
+  <button class="chip btn ghost" id="pauseBtn" aria-pressed="false">⌨️ <span id="pauseLbl">Hotkeys on</span></button>
+  <button class="restore" id="restoreBtn" title="Undo every panic/undoable macro">↩ Restore everything</button>
+  <button class="btn" id="settingsBtn" aria-label="Settings">⚙️ Settings</button>
+</header>
+
+<main>
+  <div id="banner"></div>
+  <div class="toolbar">
+    <h2>Your deck</h2>
+    <label class="sr" for="tplSel">Add from template</label>
+    <select id="tplSel" style="width:auto"><option value="">＋ Add from template…</option></select>
+    <button class="btn primary" id="newBtn">＋ New macro</button>
+  </div>
+  <div class="deck" id="deck" aria-label="Macros"></div>
+
+  <details class="log" id="logBox">
+    <summary>Activity log</summary>
+    <ol id="log" aria-live="polite"></ol>
+  </details>
+</main>
+
+<!-- macro editor -->
+<dialog id="ed" aria-labelledby="edTitle">
+  <form method="dialog" id="edForm" novalidate>
+    <div class="dlg-head"><h3 id="edTitle">Edit macro</h3><button class="btn ghost" value="cancel" aria-label="Close">✕</button></div>
+    <div class="dlg-body">
+      <div class="grid2">
+        <label class="f">Name<input type="text" id="mName" maxlength="80" required></label>
+        <div class="f"><span class="f" id="hkLbl">Hotkey (global)</span>
+          <div class="hk">
+            <input type="text" id="mHotkey" readonly aria-labelledby="hkLbl" placeholder="Click, then press keys">
+            <button type="button" class="btn" id="hkClear">Clear</button>
+          </div>
+          <p class="hint" id="hkHint">Single keys like <span class="kbd">Pause</span>, <span class="kbd">F13</span>-<span class="kbd">F24</span> or media keys work alone; anything else needs Ctrl, Alt, Shift or Win.</p>
+        </div>
+        <div class="f"><span class="f">Icon</span>
+          <div class="iconrow"><input type="text" id="mIcon" maxlength="16" aria-label="Icon (emoji)"><div class="emojis" id="emojis"></div></div>
+        </div>
+        <div class="f"><span class="f">Colour</span><div class="swatches" id="swatches"></div></div>
+      </div>
+      <div class="grid2" style="margin-top:14px">
+        <label class="check"><input type="checkbox" id="mToggle"><span>Toggle mode<small>Pressing the hotkey again restores everything this macro changed.</small></span></label>
+        <label class="check"><input type="checkbox" id="mUndo"><span>Undoable<small>Remember what changed so “Restore everything” can put it back.</small></span></label>
+        <label class="check"><input type="checkbox" id="mRemote"><span>Show on phone deck<small>Allow this macro on the PIN-protected remote deck.</small></span></label>
+      </div>
+
+      <div class="section-title">Steps — run top to bottom</div>
+      <div class="steps" id="steps"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <label class="sr" for="addStep">Add a step</label>
+        <select id="addStep" style="width:auto"></select>
+      </div>
+      <p class="err-text" id="edErr" role="alert"></p>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn danger" id="edDelete">Delete</button>
+      <button type="button" class="btn" id="edDup">Duplicate</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" id="edTest" title="Save and run now">Save &amp; test</button>
+      <button type="button" class="btn primary" id="edSave">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- running app picker -->
+<dialog id="pk" aria-labelledby="pkTitle" style="width:min(620px,96vw)">
+  <div class="dlg-head"><h3 id="pkTitle">Pick a running app</h3><button class="btn ghost" id="pkClose" aria-label="Close">✕</button></div>
+  <div class="dlg-body"><p class="hint">Open the app you want first, then pick its window here.</p><ul class="pick-list" id="pkList"></ul></div>
+</dialog>
+
+<!-- settings -->
+<dialog id="st" aria-labelledby="stTitle">
+  <form method="dialog" novalidate>
+  <div class="dlg-head"><h3 id="stTitle">Settings</h3><button class="btn ghost" value="cancel" aria-label="Close">✕</button></div>
+  <div class="dlg-body">
+    <div class="grid2">
+      <label class="check"><input type="checkbox" id="sStartup"><span>Start with Windows<small>Launches silently into the tray when you sign in.</small></span></label>
+      <label class="check"><input type="checkbox" id="sOpen"><span>Open the deck on launch</span></label>
+      <label class="check"><input type="checkbox" id="sNotify"><span>Notify when a macro runs<small>Off by default — panic should be silent.</small></span></label>
+      <label class="check"><input type="checkbox" id="sPrewarm"><span>Pre-launch panic apps<small>Starts “fill screens” apps minimised at launch so panic is instant.</small></span></label>
+      <label class="f">Deck port<input type="number" id="sPort" min="1024" max="65535"></label>
+    </div>
+
+    <div class="section-title">Phone / tablet remote deck</div>
+    <p class="hint">Run your macros from any phone on the same Wi-Fi. Protected by a PIN, limited to private network addresses, and locked out after 5 wrong PINs. Traffic is plain HTTP on your LAN, so only enable this on networks you trust. Windows may ask to allow Praxis through the firewall.</p>
+    <div class="grid2" style="margin-top:10px">
+      <label class="check"><input type="checkbox" id="rEnabled"><span>Enable remote deck</span></label>
+      <label class="f">Remote port<input type="number" id="rPort" min="1024" max="65535"></label>
+      <div class="f"><label class="f" for="rPin">PIN (6-32 characters)</label>
+        <div class="inline"><input type="password" id="rPin" autocomplete="new-password" minlength="6" maxlength="32"><button type="button" class="btn" id="rPinSet">Set PIN</button></div>
+        <span class="hint" id="pinState"></span>
+      </div>
+      <div class="f"><span class="f">Open on your phone</span><div class="urls" id="rUrls">Not running</div></div>
+    </div>
+
+    <div class="section-title">Backup</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button type="button" class="btn" id="exportBtn">⬇ Export macros</button>
+      <button type="button" class="btn" id="importBtn">⬆ Import macros</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <button type="button" class="btn danger" id="resetBtn">Reset macros to defaults</button>
+    </div>
+    <p class="hint" id="verLbl"></p>
+    <p class="err-text" id="stErr" role="alert"></p>
+  </div>
+  <div class="dlg-foot"><span class="spacer"></span><button type="button" class="btn" id="stCancel">Cancel</button><button type="button" class="btn primary" id="stSave">Save settings</button></div>
+  </form>
+</dialog>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const TOKEN = document.querySelector('meta[name="praxis-token"]').content;
+const $ = s => document.querySelector(s);
+
+function h(tag, attrs, ...kids){
+  const el = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs||{})){
+    if (v === false || v == null) continue;
+    if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k === 'class') el.className = v;
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) el.append(c instanceof Node ? c : String(c));
+  return el;
+}
+
+async function api(method, path, body){
+  const opt = {method, headers:{'X-Praxis-Token':TOKEN}};
+  if (body !== undefined){ opt.headers['Content-Type']='application/json'; opt.body = JSON.stringify(body); }
+  let res;
+  try { res = await fetch(path, opt); }
+  catch { throw new Error('Praxis is not responding — is it still running?'); }
+  const data = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(data.error || ('HTTP '+res.status));
+  return data;
+}
+
+function toast(msg, kind=''){
+  const t = h('div',{class:'toast '+kind}, msg);
+  $('#toasts').append(t);
+  setTimeout(()=>t.remove(), kind==='err'?6000:2600);
+}
+
+// ---------- catalogue ----------
+const ACTIONS = {
+  mute:{g:'Audio',l:'Mute speakers'}, unmute:{g:'Audio',l:'Unmute speakers'}, toggle_mute:{g:'Audio',l:'Toggle speaker mute'},
+  set_volume:{g:'Audio',l:'Set volume',f:['value']}, volume_step:{g:'Audio',l:'Volume up/down by…',f:['value']},
+  mic_mute:{g:'Audio',l:'Mute microphone'}, mic_unmute:{g:'Audio',l:'Unmute microphone'}, mic_toggle:{g:'Audio',l:'Toggle microphone'},
+  media:{g:'Audio',l:'Media key',f:['media','undo']},
+  minimize_foreground:{g:'Windows',l:'Minimise / hide the active window',f:['hidemode']},
+  minimize_apps:{g:'Windows',l:'Minimise / hide matching apps',f:['match','hidemode']},
+  minimize_all:{g:'Windows',l:'Minimise everything (show desktop)'},
+  fill_screens:{g:'Windows',l:'Fill screens with an app',f:['target','args','match','monitors','fillmode','launch','timeout','closeOnRestore']},
+  focus_app:{g:'Windows',l:'Bring an app to the front',f:['match']},
+  close_app:{g:'Windows',l:'Close matching apps (politely)',f:['match']},
+  launch:{g:'Launch',l:'Launch an app / file',f:['target','args','launchmode']},
+  open_url:{g:'Launch',l:'Open a website',f:['url']},
+  run_command:{g:'Launch',l:'Run a command (hidden)',f:['command']},
+  send_keys:{g:'Input',l:'Press a key combination',f:['keys']},
+  type_text:{g:'Input',l:'Type text',f:['text']},
+  clear_clipboard:{g:'Input',l:'Clear the clipboard'},
+  lock:{g:'System',l:'Lock the PC'}, monitors_off:{g:'System',l:'Turn monitors off'},
+  wait:{g:'System',l:'Wait',f:['wait']}, notify:{g:'System',l:'Show a notification',f:['text']},
+  restore:{g:'System',l:'Restore everything (undo panics)'},
+};
+const COLORS = ['#D7036A','#E8590C','#F59F00','#2F9E44','#1F9D55','#0C8599','#1C7ED6','#3B5BDB','#7048E8','#AE3EC9','#495057','#212529'];
+const EMOJIS = ['🚨','✅','🔇','🎙️','⏯️','🔒','💼','📊','📧','🧠','🎮','🎬','🌙','⚡','🛡️','🚀','👀','📞'];
+const TEMPLATES = {
+  'Panic: Netflix → work': {icon:'🚨',color:'#D7036A',toggle:true,undoable:true,actions:[
+    {type:'mute'},{type:'media',target:'play_pause'},{type:'minimize_foreground',mode:'minimize'},
+    {type:'minimize_apps',match:'Netflix, YouTube, Prime Video, Disney+, Twitch, vlc.exe',mode:'minimize'},
+    {type:'fill_screens',target:'C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE',match:'excel.exe',mode:'maximize',launch:true,timeout:6000}]},
+  'Meeting mode': {icon:'📞',color:'#1C7ED6',toggle:true,undoable:true,actions:[
+    {type:'set_volume',value:35},{type:'mic_unmute'},{type:'minimize_apps',match:'spotify.exe, Netflix, YouTube',mode:'minimize'},{type:'focus_app',match:'Teams'}]},
+  'Stealth (hide, not minimise)': {icon:'👀',color:'#212529',toggle:true,undoable:true,actions:[
+    {type:'mute'},{type:'minimize_foreground',mode:'hide'},{type:'minimize_apps',match:'Netflix, YouTube',mode:'hide'}]},
+  'Goodnight': {icon:'🌙',color:'#3B5BDB',actions:[{type:'mute'},{type:'media',target:'stop'},{type:'monitors_off'}]},
+  'Screenshot snip': {icon:'✂️',color:'#0C8599',actions:[{type:'send_keys',keys:'Win+Shift+S'}]},
+  'Volume up 10%': {icon:'🔊',color:'#2F9E44',actions:[{type:'volume_step',value:10}]},
+  'Volume down 10%': {icon:'🔉',color:'#495057',actions:[{type:'volume_step',value:-10}]},
+  'Open my sites': {icon:'🚀',color:'#E8590C',actions:[{type:'open_url',target:'https://outlook.office.com/'},{type:'wait',value:300},{type:'open_url',target:'https://teams.microsoft.com/'}]},
+  'Blank macro': {icon:'⚡',color:'#AE3EC9',actions:[]},
+};
+
+// ---------- state ----------
+let S = null;           // last /api/state
+let cfg = null;         // working copy of config
+let lastSig = '';
+let editing = null;     // {index|null, macro}
+let pausedBeforeRecord = null;
+
+async function refresh(){
+  try{
+    S = await api('GET','/api/state');
+    if (!editing && !$('#st').open) cfg = S.config;
+    render();
+  }catch(e){ $('#banner').replaceChildren(h('div',{class:'banner'}, e.message)); }
+}
+
+function render(){
+  const a = S.audio || {};
+  $('#banner').replaceChildren(
+    ...(S.monitorError ? [h('div',{class:'banner'},'Screens: '+S.monitorError)] : []),
+    ...(!a.available && a.error ? [h('div',{class:'banner'},'Speakers: '+a.error)] : []));
+  // audio
+  $('#muteBtn').textContent = a.muted ? '🔇' : '🔊';
+  $('#muteBtn').setAttribute('aria-label', a.muted ? 'Unmute speakers' : 'Mute speakers');
+  $('#spkChip').classList.toggle('on', !!a.muted);
+  if (document.activeElement !== $('#vol')) $('#vol').value = a.volume ?? 0;
+  $('#volLbl').textContent = a.available ? (a.muted ? 'Muted' : a.volume+'%') : 'n/a';
+  $('#micBtn').textContent = a.micMuted ? '🚫' : '🎙️';
+  $('#micBtn').setAttribute('aria-label', a.micMuted ? 'Unmute microphone' : 'Mute microphone');
+  $('#micLbl').textContent = a.micError ? 'No mic' : (a.micMuted ? 'Mic muted' : 'Mic live');
+  $('#micChip').classList.toggle('on', !!a.micMuted);
+  $('#monLbl').textContent = (S.monitors||[]).length + ' screen' + ((S.monitors||[]).length===1?'':'s');
+  $('#pauseLbl').textContent = S.paused ? 'Hotkeys paused' : 'Hotkeys on';
+  $('#pauseBtn').setAttribute('aria-pressed', String(S.paused));
+  $('#pauseBtn').classList.toggle('bad', S.paused);
+  $('#restoreBtn').classList.toggle('live', (S.active||[]).length>0);
+
+  const sig = JSON.stringify([cfg.macros, S.hotkeys, S.active, S.paused]);
+  if (sig !== lastSig && !document.querySelector('.tile.dragging')){ lastSig = sig; renderDeck(); }
+  renderLog();
+}
+
+function renderDeck(){
+  const deck = $('#deck');
+  const active = new Set(S.active||[]);
+  const tiles = cfg.macros.map((m,i)=>{
+    const st = S.hotkeys[m.id];
+    const bad = m.hotkey && st && st!=='ok' && st!=='paused';
+    const tile = h('div',{class:'tile'+(active.has(m.id)?' active':''), style:{'--c':m.color}, draggable:'true', 'data-i':i},
+      h('button',{class:'run', onclick:()=>run(m, tile), 'aria-label':'Run '+m.name+(m.hotkey?' ('+m.hotkey+')':'')},
+        h('span',{class:'ico','aria-hidden':'true'}, m.icon||'⚡'),
+        h('span',{class:'nm'}, m.name),
+        m.hotkey ? h('kbd',{}, m.hotkey) : null),
+      h('button',{class:'edit', onclick:()=>openEditor(i), 'aria-label':'Edit '+m.name, title:'Edit'}, '✎'),
+      bad ? h('span',{class:'flag warn', title:'Hotkey problem: '+st},'⚠ hotkey') :
+      active.has(m.id) ? h('span',{class:'flag act'},'ACTIVE') : null);
+    tile.addEventListener('dragstart', e=>{ tile.classList.add('dragging'); e.dataTransfer.setData('text/plain', String(i)); });
+    tile.addEventListener('dragend', ()=>tile.classList.remove('dragging'));
+    tile.addEventListener('dragover', e=>{ e.preventDefault(); tile.classList.add('dropzone'); });
+    tile.addEventListener('dragleave', ()=>tile.classList.remove('dropzone'));
+    tile.addEventListener('drop', e=>{ e.preventDefault(); tile.classList.remove('dropzone'); moveMacro(+e.dataTransfer.getData('text/plain'), i); });
+    return tile;
+  });
+  tiles.push(h('div',{class:'tile add'}, h('button',{class:'run', onclick:()=>openEditor(null)}, h('span',{class:'ico'},'＋'), h('span',{class:'nm'},'New macro'))));
+  deck.replaceChildren(...tiles);
+}
+
+let logSig = '';
+function renderLog(){
+  const entries = (S.log||[]).slice(-120).reverse();
+  const sig = entries.length ? entries[0].time + entries.length : '';
+  if (sig === logSig) return; logSig = sig;
+  $('#log').replaceChildren(...entries.map(e=>h('li',{class:e.level}, h('time',{}, new Date(e.time).toLocaleTimeString()), e.msg)));
+}
+
+async function run(m, tile){
+  tile.classList.remove('running'); void tile.offsetWidth; tile.classList.add('running');
+  try{ await api('POST','/api/run/'+encodeURIComponent(m.id)); setTimeout(refresh, 400); setTimeout(refresh, 1500); }
+  catch(e){ toast(e.message,'err'); }
+}
+
+async function saveConfig(next){
+  const saved = await api('PUT','/api/config', next);
+  cfg = saved; lastSig = '';
+  await refresh();
+  return saved;
+}
+
+async function moveMacro(from, to){
+  if (from === to || isNaN(from)) return;
+  const next = structuredClone(cfg);
+  const [m] = next.macros.splice(from,1);
+  next.macros.splice(to,0,m);
+  try{ await saveConfig(next); }catch(e){ toast(e.message,'err'); }
+}
+
+// ---------- header controls ----------
+$('#muteBtn').onclick = ()=>api('POST','/api/audio',{mute:!S.audio.muted}).then(refresh).catch(e=>toast(e.message,'err'));
+$('#micBtn').onclick = ()=>api('POST','/api/audio',{micMute:!S.audio.micMuted}).then(refresh).catch(e=>toast(e.message,'err'));
+let volTimer;
+$('#vol').oninput = e=>{ $('#volLbl').textContent = e.target.value+'%'; clearTimeout(volTimer);
+  volTimer = setTimeout(()=>api('POST','/api/audio',{volume:+e.target.value}).catch(err=>toast(err.message,'err')), 60); };
+$('#monBtn').onclick = ()=>api('POST','/api/identify').catch(e=>toast(e.message,'err'));
+$('#pauseBtn').onclick = ()=>api('POST','/api/hotkeys',{paused:!S.paused}).then(refresh).catch(e=>toast(e.message,'err'));
+$('#restoreBtn').onclick = ()=>api('POST','/api/restore').then(()=>{toast('Restored','ok'); setTimeout(refresh,500);}).catch(e=>toast(e.message,'err'));
+$('#newBtn').onclick = ()=>openEditor(null);
+for (const name of Object.keys(TEMPLATES)) $('#tplSel').append(h('option',{value:name}, name));
+$('#tplSel').onchange = e=>{ const t = TEMPLATES[e.target.value]; e.target.value=''; if (!t) return;
+  openEditor(null, {id:'', name:Object.keys(TEMPLATES).find(k=>TEMPLATES[k]===t), hotkey:'', remote:true, toggle:false, undoable:false, ...structuredClone(t)}); };
+
+// ---------- editor ----------
+function blankMacro(){ return {id:'', name:'New macro', icon:'⚡', color:'#D7036A', hotkey:'', toggle:false, undoable:false, remote:true, actions:[{type:'mute'}]}; }
+
+function openEditor(index, preset){
+  const m = preset || (index==null ? blankMacro() : structuredClone(cfg.macros[index]));
+  editing = {index, m};
+  $('#edTitle').textContent = index==null ? 'New macro' : 'Edit macro';
+  $('#mName').value = m.name; $('#mHotkey').value = m.hotkey||''; $('#mIcon').value = m.icon||'';
+  $('#mToggle').checked = !!m.toggle; $('#mUndo').checked = !!m.undoable; $('#mRemote').checked = !!m.remote;
+  $('#edDelete').hidden = index==null; $('#edDup').hidden = index==null; $('#edErr').textContent='';
+  renderSwatches(); renderSteps();
+  $('#ed').showModal();
+}
+// 'close' fires asynchronously: ignore it if the editor was already reopened.
+$('#ed').addEventListener('close', ()=>{ if ($('#ed').open) return; editing=null; stopRecording(); lastSig=''; refresh(); });
+
+$('#emojis').append(...EMOJIS.map(e=>h('button',{type:'button','aria-label':'Use '+e, onclick:()=>{ $('#mIcon').value=e; }}, e)));
+function renderSwatches(){
+  $('#swatches').replaceChildren(...COLORS.map(c=>h('button',{type:'button', style:{background:c}, 'aria-label':'Colour '+c,
+    'aria-pressed':String(editing.m.color===c), onclick:()=>{ editing.m.color=c; renderSwatches(); }})));
+}
+
+function stepOptions(sel){
+  const groups = {};
+  for (const [k,v] of Object.entries(ACTIONS)) (groups[v.g] ||= []).push(h('option',{value:k, selected:k===sel}, v.l));
+  return Object.entries(groups).map(([g,opts])=>h('optgroup',{label:g}, ...opts));
+}
+$('#addStep').replaceChildren(h('option',{value:''},'＋ Add a step…'), ...stepOptions(''));
+$('#addStep').querySelectorAll('option[selected]').forEach(o=>o.selected=false);
+$('#addStep').value='';
+$('#addStep').onchange = e=>{ if (!e.target.value) return; const a = {type:e.target.value}; defaults(a); editing.m.actions.push(a); e.target.value=''; renderSteps(); };
+
+function defaults(a){
+  if (a.type==='fill_screens'){ a.mode='maximize'; a.launch=true; a.timeout=6000; }
+  if (a.type==='media') a.target='play_pause';
+  if (a.type==='minimize_foreground' || a.type==='minimize_apps') a.mode='minimize';
+  if (a.type==='launch') a.mode='normal';
+  if (a.type==='set_volume') a.value=30;
+  if (a.type==='volume_step') a.value=10;
+  if (a.type==='wait') a.value=500;
+}
+
+function field(label, input, wide, hint){
+  return h('label',{class:'f'+(wide?' wide':'')}, label, input, hint?h('span',{class:'hint'},hint):null);
+}
+function text(a, key, ph, max=1024){ return h('input',{type:'text', value:a[key]||'', placeholder:ph||'', maxlength:max, oninput:e=>{ a[key]=e.target.value; }}); }
+function num(a, key, min, max){ return h('input',{type:'number', value:a[key]??0, min, max, oninput:e=>{ a[key]=e.target.value===''?0:+e.target.value; }}); }
+function sel(a, key, opts){ const s = h('select',{onchange:e=>{ a[key]=e.target.value; }}, ...opts.map(([v,l])=>h('option',{value:v, selected:(a[key]||opts[0][0])===v}, l))); return s; }
+function chk(a, key, label, small){ return h('label',{class:'check'}, h('input',{type:'checkbox', checked:!!a[key], onchange:e=>{ a[key]=e.target.checked; }}), h('span',{}, label, small?h('small',{},small):null)); }
+
+function renderSteps(){
+  const steps = editing.m.actions;
+  $('#steps').replaceChildren(...steps.map((a,i)=>{
+    const fields = (ACTIONS[a.type]?.f)||[];
+    const box = h('div',{class:'step-fields'});
+    for (const f of fields) box.append(...fieldFor(a, f, i));
+    return h('div',{class:'step'+(a.disabled?' off':'')},
+      h('div',{class:'step-head'},
+        h('span',{class:'num','aria-hidden':'true'}, i+1),
+        h('select',{'aria-label':'Step '+(i+1)+' action', onchange:e=>{ steps[i]={type:e.target.value}; defaults(steps[i]); renderSteps(); }}, ...stepOptions(a.type)),
+        h('button',{type:'button',class:'btn', title:a.disabled?'Enable step':'Disable step','aria-label':(a.disabled?'Enable':'Disable')+' step '+(i+1), onclick:()=>{ a.disabled=!a.disabled; renderSteps(); }}, a.disabled?'Off':'On'),
+        h('button',{type:'button',class:'btn','aria-label':'Move step '+(i+1)+' up', disabled:i===0, onclick:()=>{ [steps[i-1],steps[i]]=[steps[i],steps[i-1]]; renderSteps(); }}, '↑'),
+        h('button',{type:'button',class:'btn','aria-label':'Move step '+(i+1)+' down', disabled:i===steps.length-1, onclick:()=>{ [steps[i+1],steps[i]]=[steps[i],steps[i+1]]; renderSteps(); }}, '↓'),
+        h('button',{type:'button',class:'btn','aria-label':'Duplicate step '+(i+1), onclick:()=>{ steps.splice(i+1,0,structuredClone(a)); renderSteps(); }}, '⧉'),
+        h('button',{type:'button',class:'btn danger','aria-label':'Remove step '+(i+1), onclick:()=>{ steps.splice(i,1); renderSteps(); }}, '✕')),
+      fields.length ? box : null);
+  }));
+  if (!steps.length) $('#steps').append(h('p',{class:'hint'},'No steps yet — add one below.'));
+}
+
+function pickBtn(onPick){ return h('button',{type:'button',class:'btn', onclick:()=>openPicker(onPick)}, 'Pick…'); }
+
+function fieldFor(a, f, i){
+  switch(f){
+    case 'value':
+      return a.type==='set_volume' ? [field('Volume %', num(a,'value',0,100))] : [field('Change (−100 to 100)', num(a,'value',-100,100), false, 'Positive is louder, negative is quieter.')];
+    case 'wait': return [field('Milliseconds', num(a,'value',0,60000))];
+    case 'media': return [field('Key', sel(a,'target',[['play_pause','Play / pause'],['stop','Stop'],['next','Next track'],['prev','Previous track']]))];
+    case 'undo': return [chk(a,'undo','Press again on restore', 'Resumes playback when you restore. Play/pause is a toggle, so only tick this if media was playing.')];
+    case 'hidemode': return [field('How', sel(a,'mode',[['minimize','Minimise to taskbar'],['hide','Hide completely (also from taskbar)']]))];
+    case 'fillmode': return [field('Fit', sel(a,'mode',[['maximize','Maximise (keeps taskbar)'],['cover','Cover entire screen']]))];
+    case 'launchmode': return [field('Window', sel(a,'mode',[['normal','Normal'],['maximized','Maximised'],['minimized','Minimised']]))];
+    case 'launch': return [chk(a,'launch','Launch if needed','Opens extra windows when there are more screens than open windows.')];
+    case 'closeOnRestore': return [chk(a,'closeOnRestore','Close launched windows on restore','Otherwise they are minimised.')];
+    case 'timeout': return [field('Wait for window (ms)', num(a,'timeout',500,60000))];
+    case 'target': {
+      const inp = text(a,'target', a.type==='fill_screens' ? 'C:\\…\\EXCEL.EXE or notepad.exe' : 'App, file, shortcut or folder path');
+      return [field('App path', h('div',{class:'inline'}, inp, pickBtn(w=>{ a.target=w.path; inp.value=w.path; if (a.type==='fill_screens'){ a.match=w.exe; renderSteps(); } })), true)];
+    }
+    case 'args': return [field('Arguments (optional)', text(a,'args','e.g. /n or a file to open'))];
+    case 'url': return [field('URL', text(a,'target','https://…'), true)];
+    case 'command': return [field('Command', text(a,'target','e.g. taskkill /im game.exe'), true, 'Runs hidden via cmd.exe /C with your permissions.')];
+    case 'keys': {
+      const inp = h('input',{type:'text', value:a.keys||'', readonly:true, placeholder:'Click, then press keys'});
+      inp.addEventListener('focus', ()=>startRecording(inp, v=>{ a.keys=v; }, false));
+      inp.addEventListener('blur', stopRecording);
+      return [field('Keys to press', inp, false, 'E.g. Win+Shift+S, Ctrl+Shift+Esc, Alt+Tab.')];
+    }
+    case 'text': return [field(a.type==='notify'?'Message':'Text to type', h('textarea',{maxlength:4000, oninput:e=>{ a.text=e.target.value; }}, a.text||''), true)];
+    case 'match': {
+      const inp = text(a,'match', 'e.g. excel.exe, Netflix, YouTube');
+      return [field('Match windows', h('div',{class:'inline'}, inp, pickBtn(w=>{
+        const cur = (a.match||'').trim();
+        a.match = (a.type==='minimize_apps' && cur) ? cur+', '+w.exe : w.exe; inp.value=a.match; })), true,
+        'Comma-separated. “name.exe” matches the program; other words match the program name or appear in the window title.')];
+    }
+    case 'monitors': return [monitorPicker(a)];
+  }
+  return [];
+}
+
+function monitorPicker(a){
+  const mons = S.monitors||[];
+  const wrap = h('div',{class:'f wide'});
+  const box = h('div',{class:'mons', role:'group','aria-label':'Screens to fill'});
+  if (mons.length){
+    const minX=Math.min(...mons.map(m=>m.x)), minY=Math.min(...mons.map(m=>m.y));
+    const maxX=Math.max(...mons.map(m=>m.x+m.w)), maxY=Math.max(...mons.map(m=>m.y+m.h));
+    const draw = ()=>{
+      const W = box.clientWidth||600, H = 120, pad=8;
+      const sc = Math.min((W-2*pad)/(maxX-minX), (H-2*pad)/(maxY-minY));
+      const ox = (W-(maxX-minX)*sc)/2, oy=(H-(maxY-minY)*sc)/2;
+      const selected = new Set(a.monitors||[]);
+      box.replaceChildren(...mons.map(m=>h('button',{type:'button', 'aria-pressed':String(selected.size===0||selected.has(m.index)),
+        'aria-label':'Screen '+m.index+' '+m.w+'×'+m.h+(m.primary?' (primary)':''),
+        style:{left:(ox+(m.x-minX)*sc+2)+'px', top:(oy+(m.y-minY)*sc+2)+'px', width:(m.w*sc-4)+'px', height:(m.h*sc-4)+'px'},
+        onclick:()=>{
+          let s = new Set(a.monitors && a.monitors.length ? a.monitors : mons.map(x=>x.index));
+          s.has(m.index) ? s.delete(m.index) : s.add(m.index);
+          if (s.size===0) s = new Set([m.index]);
+          a.monitors = s.size===mons.length ? [] : [...s].sort((x,y)=>x-y);
+          draw(); label();
+        }}, m.index+(m.primary?'★':''))));
+    };
+    requestAnimationFrame(draw);
+  } else box.append(h('p',{class:'hint',style:{padding:'10px'}},'No screens detected.'));
+  const lab = h('span',{class:'hint'});
+  const label = ()=>{ lab.textContent = !(a.monitors&&a.monitors.length) ? 'All screens selected. Click a screen to leave it out.' : 'Screens: '+a.monitors.join(', ')+' — one window per screen.'; };
+  label();
+  wrap.append(h('span',{}, 'Screens  ', h('button',{type:'button',class:'btn',style:{padding:'2px 8px',fontSize:'12px'}, onclick:()=>api('POST','/api/identify')},'Identify')), box, lab);
+  return wrap;
+}
+
+// running-app picker
+let pickCb = null;
+async function openPicker(cb){
+  pickCb = cb;
+  $('#pkList').replaceChildren(h('li',{class:'hint'},'Loading…'));
+  $('#pk').showModal();
+  try{
+    const wins = await api('GET','/api/windows');
+    const seen = new Set();
+    const items = (wins||[]).filter(w=>{ const k=w.exe+'|'+w.title; if (seen.has(k)) return false; seen.add(k); return true; });
+    $('#pkList').replaceChildren(...(items.length ? items.map(w=>h('li',{}, h('button',{type:'button', onclick:()=>{ $('#pk').close(); pickCb && pickCb(w); }},
+      h('strong',{}, w.exe||'(unknown)'), ' — ', w.title, h('small',{}, w.path||'path unavailable (elevated app?)')))) :
+      [h('li',{class:'hint'},'No windows found.')]));
+  }catch(e){ $('#pkList').replaceChildren(h('li',{class:'err-text'}, e.message)); }
+}
+$('#pkClose').onclick = ()=>$('#pk').close();
+
+// hotkey recording
+const CODEMAP = {Space:'Space',Enter:'Enter',NumpadEnter:'Enter',Escape:'Esc',Tab:'Tab',Backspace:'Backspace',Pause:'Pause',ScrollLock:'ScrollLock',
+  PrintScreen:'PrintScreen',Insert:'Insert',Delete:'Delete',Home:'Home',End:'End',PageUp:'PageUp',PageDown:'PageDown',
+  ArrowLeft:'Left',ArrowRight:'Right',ArrowUp:'Up',ArrowDown:'Down',NumpadMultiply:'NumMul',NumpadAdd:'NumAdd',NumpadSubtract:'NumSub',
+  NumpadDecimal:'NumDec',NumpadDivide:'NumDiv',Semicolon:'Semicolon',Equal:'Equal',Comma:'Comma',Minus:'Minus',Period:'Period',Slash:'Slash',
+  Backquote:'Backquote',BracketLeft:'BracketLeft',Backslash:'Backslash',BracketRight:'BracketRight',Quote:'Quote',
+  MediaPlayPause:'MediaPlayPause',MediaTrackNext:'MediaNext',MediaTrackPrevious:'MediaPrev',MediaStop:'MediaStop',
+  AudioVolumeMute:'VolumeMute',AudioVolumeDown:'VolumeDown',AudioVolumeUp:'VolumeUp'};
+function keyName(e){
+  const c = e.code;
+  if (/^Key[A-Z]$/.test(c)) return c.slice(3);
+  if (/^Digit[0-9]$/.test(c)) return c.slice(5);
+  if (/^Numpad[0-9]$/.test(c)) return 'Num'+c.slice(6);
+  if (/^F([1-9]|1[0-9]|2[0-4])$/.test(c)) return c;
+  if (e.key === 'Pause' || c === 'Pause') return 'Pause';
+  return CODEMAP[c] || null;
+}
+let rec = null;
+async function startRecording(inp, onSet, isHotkey){
+  stopRecording();
+  rec = {inp, onSet, isHotkey};
+  inp.classList.add('rec'); inp.value = 'Press keys…';
+  if (isHotkey && S && !S.paused){ pausedBeforeRecord = false; try{ await api('POST','/api/hotkeys',{paused:true}); }catch{} }
+}
+function stopRecording(){
+  if (!rec) return;
+  rec.inp.classList.remove('rec');
+  if (rec.inp.value === 'Press keys…') rec.inp.value = rec.prev || (rec.isHotkey ? (editing?.m.hotkey||'') : '');
+  if (rec.isHotkey && pausedBeforeRecord === false){ pausedBeforeRecord = null; api('POST','/api/hotkeys',{paused:false}).catch(()=>{}); }
+  rec = null;
+}
+document.addEventListener('keydown', e=>{
+  if (!rec || document.activeElement !== rec.inp) return;
+  if (e.key === 'Tab' && !e.ctrlKey && !e.altKey && !e.metaKey) return; // keep keyboard navigation
+  e.preventDefault(); e.stopPropagation();
+  const k = keyName(e);
+  if (!k) return; // modifier only
+  const parts = [];
+  if (e.ctrlKey) parts.push('Ctrl'); if (e.altKey) parts.push('Alt'); if (e.shiftKey) parts.push('Shift'); if (e.metaKey) parts.push('Win');
+  parts.push(k);
+  const v = parts.join('+');
+  rec.inp.value = v; rec.prev = v; rec.onSet(v);
+}, true);
+$('#mHotkey').addEventListener('focus', ()=>startRecording($('#mHotkey'), v=>{ editing.m.hotkey=v; }, true));
+$('#mHotkey').addEventListener('blur', stopRecording);
+$('#hkClear').onclick = ()=>{ editing.m.hotkey=''; $('#mHotkey').value=''; };
+
+function collect(){
+  const m = editing.m;
+  m.name = $('#mName').value.trim() || 'Macro';
+  m.icon = $('#mIcon').value.trim();
+  m.toggle = $('#mToggle').checked; m.undoable = $('#mUndo').checked || m.toggle; m.remote = $('#mRemote').checked;
+  return m;
+}
+async function saveEditor(){
+  const m = collect();
+  const next = structuredClone(cfg);
+  if (editing.index==null) next.macros.push(m); else next.macros[editing.index] = m;
+  const saved = await saveConfig(next);
+  return saved.macros[editing.index==null ? saved.macros.length-1 : editing.index];
+}
+$('#edSave').onclick = async ()=>{
+  try{ await saveEditor(); $('#ed').close(); toast('Saved','ok'); }catch(e){ $('#edErr').textContent = e.message; }
+};
+$('#edTest').onclick = async ()=>{
+  try{ const m = await saveEditor(); $('#ed').close(); await api('POST','/api/run/'+encodeURIComponent(m.id)); toast('Running '+m.name,'ok'); setTimeout(refresh,800); }
+  catch(e){ $('#edErr').textContent = e.message; }
+};
+$('#edDelete').onclick = async ()=>{
+  if (!confirm('Delete “'+editing.m.name+'”?')) return;
+  const next = structuredClone(cfg); next.macros.splice(editing.index,1);
+  try{ await saveConfig(next); $('#ed').close(); toast('Deleted','ok'); }catch(e){ $('#edErr').textContent = e.message; }
+};
+$('#edDup').onclick = ()=>{ const m = structuredClone(collect()); $('#ed').close(); m.id=''; m.name += ' copy'; m.hotkey=''; openEditor(null, m); };
+
+// ---------- settings ----------
+$('#settingsBtn').onclick = ()=>{
+  cfg = structuredClone(S.config);
+  const s = cfg.settings;
+  $('#sStartup').checked = s.runAtStartup; $('#sOpen').checked = s.openDeckOnLaunch; $('#sNotify').checked = s.notifyOnRun;
+  $('#sPrewarm').checked = s.prewarmApps; $('#sPort').value = s.port;
+  $('#rEnabled').checked = s.remote.enabled; $('#rPort').value = s.remote.port; $('#rPin').value='';
+  $('#pinState').textContent = s.remote.hasPin ? 'A PIN is set. Setting a new one signs out every phone.' : 'No PIN yet — set one before enabling.';
+  $('#rUrls').textContent = !S.remote.running ? 'Not running' : S.remote.urls?.length ? S.remote.urls.join('\n') :
+    'Running on port '+s.remote.port+'. Use http://<this PC\'s IP>:'+s.remote.port+'/ (find the IP with ipconfig).';
+  $('#verLbl').textContent = 'Praxis '+S.version+' · settings and macros are stored in %APPDATA%\\Praxis\\config.json';
+  $('#stErr').textContent='';
+  $('#st').showModal();
+};
+$('#st').addEventListener('close', ()=>{ lastSig=''; refresh(); });
+$('#stCancel').onclick = ()=>$('#st').close();
+$('#stSave').onclick = async ()=>{
+  const next = structuredClone(S.config); const s = next.settings;
+  s.runAtStartup = $('#sStartup').checked; s.openDeckOnLaunch = $('#sOpen').checked; s.notifyOnRun = $('#sNotify').checked;
+  s.prewarmApps = $('#sPrewarm').checked; s.port = +$('#sPort').value; s.remote.enabled = $('#rEnabled').checked; s.remote.port = +$('#rPort').value;
+  const portChanged = s.port !== S.config.settings.port;
+  try{ await saveConfig(next); $('#st').close(); toast(portChanged ? 'Saved — the new deck port applies after restarting Praxis' : 'Settings saved','ok'); }
+  catch(e){ $('#stErr').textContent = e.message; }
+};
+$('#rPinSet').onclick = async ()=>{
+  try{ await api('POST','/api/pin',{pin:$('#rPin').value}); $('#rPin').value=''; $('#pinState').textContent='A PIN is set. Setting a new one signs out every phone.'; toast('PIN saved','ok'); await refresh(); }
+  catch(e){ $('#stErr').textContent = e.message; }
+};
+$('#exportBtn').onclick = ()=>{
+  const data = JSON.stringify({praxis:1, macros:S.config.macros}, null, 2);
+  const a = h('a',{href:URL.createObjectURL(new Blob([data],{type:'application/json'})), download:'praxis-macros.json'});
+  document.body.append(a); a.click(); a.remove();
+};
+$('#importBtn').onclick = ()=>$('#importFile').click();
+$('#importFile').onchange = async e=>{
+  const f = e.target.files[0]; e.target.value=''; if (!f) return;
+  try{
+    const data = JSON.parse(await f.text());
+    const macros = Array.isArray(data.macros) ? data.macros : null;
+    if (!macros) throw new Error('That file has no macros in it.');
+    if (!confirm('Replace your '+S.config.macros.length+' macros with '+macros.length+' imported ones?')) return;
+    const next = structuredClone(S.config); next.macros = macros;
+    await saveConfig(next); toast('Imported '+macros.length+' macros','ok');
+  }catch(err){ $('#stErr').textContent = 'Import failed: '+err.message; }
+};
+$('#resetBtn').onclick = async ()=>{
+  if (!confirm('Replace all macros with the defaults? Settings are kept.')) return;
+  try{ await api('POST','/api/defaults'); $('#st').close(); toast('Macros reset','ok'); lastSig=''; await refresh(); }catch(e){ $('#stErr').textContent=e.message; }
+};
+
+refresh();
+setInterval(()=>{ if (!document.hidden) refresh(); }, 1500);
+document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) refresh(); });
+</script>
+</body>
+</html>
