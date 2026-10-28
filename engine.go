@@ -91,6 +91,16 @@ func (l *Logger) add(level, format string, args ...any) {
 	}
 }
 
+// Close releases the log file (Windows cannot delete an open file).
+func (l *Logger) Close() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.file != nil {
+		_ = l.file.Close()
+		l.file = nil
+	}
+}
+
 func (l *Logger) Info(f string, a ...any)  { l.add("info", f, a...) }
 func (l *Logger) Warn(f string, a ...any)  { l.add("warn", f, a...) }
 func (l *Logger) Error(f string, a ...any) { l.add("error", f, a...) }

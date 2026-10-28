@@ -83,6 +83,7 @@ func newTestServer(t *testing.T) (*Server, *httptest.Server) {
 		t.Fatal(err)
 	}
 	log := NewLogger(dir)
+	t.Cleanup(log.Close)
 	app := &App{log: log, cfg: store}
 	plat := newPlatform(app)
 	eng := NewEngine(store, plat, log)
