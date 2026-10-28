@@ -60,6 +60,17 @@ func TestNormalizeRejects(t *testing.T) {
 	}
 }
 
+func TestFillWebsite(t *testing.T) {
+	a := Action{Type: "fill_screens", Target: "https://outlook.office.com/mail", Monitors: []int{2}, Launch: true}
+	if err := a.normalize(); err != nil {
+		t.Fatalf("website fill rejected: %v", err)
+	}
+	bad := Action{Type: "fill_screens", Target: "https://", Launch: true}
+	if err := bad.normalize(); err == nil {
+		t.Error("empty host accepted")
+	}
+}
+
 func TestMatchFromTarget(t *testing.T) {
 	if got := matchFromTarget(`"C:\Program Files\Office\EXCEL.EXE"`); got != "EXCEL.EXE" {
 		t.Errorf("got %q", got)

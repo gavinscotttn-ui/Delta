@@ -18,7 +18,8 @@ Settings and macros live in `%APPDATA%\Praxis\config.json`; the activity log is 
 
 ## Features
 
-- **Switch:** set up in one card (key, app, screens, what to hide). Changes save as you make them.
+- **Switch:** set up in one card. Each screen can show its own app or a website (opened in its own browser
+  window, closed again on return). Changes save as you make them.
 - **Discreet:** neutral names, no notifications, optional hidden tray icon, history kept in memory only unless you
   choose otherwise. Rename `Praxis.exe` to anything you like.
 - **Light:** about 26 MB of memory, no CPU use while idle, the control window only polls while it is open.

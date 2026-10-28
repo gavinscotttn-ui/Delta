@@ -291,11 +291,18 @@ func (a *Action) normalize() error {
 		if a.Timeout > maxWaitMs {
 			return fmt.Errorf("timeout must be at most %d ms", maxWaitMs)
 		}
+		if isWebTarget(a.Target) {
+			if err := checkURL(a.Target); err != nil {
+				return err
+			}
+			a.Match = "" // a fresh browser window is always opened for websites
+			return nil
+		}
 		if strings.TrimSpace(a.Match) == "" {
 			a.Match = matchFromTarget(a.Target)
 		}
 		if a.Match == "" {
-			return errors.New("choose an app (path or window match)")
+			return errors.New("choose an app or a website")
 		}
 		if a.Launch {
 			return req("app path", a.Target)
@@ -309,10 +316,7 @@ func (a *Action) normalize() error {
 		}
 		return req("app path", a.Target)
 	case "open_url":
-		u, err := url.Parse(strings.TrimSpace(a.Target))
-		if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
-			return errors.New("URL must start with http:// or https://")
-		}
+		return checkURL(a.Target)
 	case "focus_app", "close_app":
 		return req("match", a.Match)
 	case "send_keys":
@@ -327,6 +331,19 @@ func (a *Action) normalize() error {
 		}
 	case "run_command":
 		return req("command", a.Target)
+	}
+	return nil
+}
+
+func isWebTarget(t string) bool {
+	t = strings.ToLower(strings.TrimSpace(t))
+	return strings.HasPrefix(t, "http://") || strings.HasPrefix(t, "https://")
+}
+
+func checkURL(t string) error {
+	u, err := url.Parse(strings.TrimSpace(t))
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		return errors.New("web addresses must start with http:// or https://")
 	}
 	return nil
 }

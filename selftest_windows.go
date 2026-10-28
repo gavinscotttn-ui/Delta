@@ -59,7 +59,7 @@ func runSelfTest() int {
 	}
 
 	// hotkey registration on a real window
-	app := &App{log: NewLogger(os.TempDir())}
+	app := &App{log: NewLogger(os.TempDir()), cfg: &ConfigStore{cfg: c}}
 	newPlatform(app)
 	if err := platformInit(app); err != nil {
 		fail("tray window: %v", err)
@@ -75,7 +75,6 @@ func runSelfTest() int {
 
 	// fill a screen with notepad, then restore
 	if len(mons) > 0 {
-		app.cfg = &ConfigStore{cfg: c}
 		m := &Macro{ID: "fill", Name: "selftest", Undoable: true, Actions: []Action{
 			{Type: "fill_screens", Target: "notepad.exe", Match: "notepad.exe", Mode: "maximize", Launch: true, Timeout: 15000, Monitors: []int{1}, CloseOnRestore: true},
 		}}
@@ -99,6 +98,22 @@ func runSelfTest() int {
 		thePlatform.Undo(frame)
 		time.Sleep(500 * time.Millisecond)
 		pass("undo ran (notepad sent WM_CLOSE)")
+	}
+
+	// a website on screen 1 (Edge ships with Windows; first-run screens can interfere, so warn only)
+	if len(mons) > 0 {
+		m := &Macro{ID: "web", Name: "selftest web", Undoable: true, Actions: []Action{
+			{Type: "fill_screens", Target: "https://example.com/", Monitors: []int{1}, Mode: "maximize", Launch: true, Timeout: 15000},
+		}}
+		frame, err := thePlatform.Run(m, func() {})
+		if err != nil {
+			warn("website on screen: %v", err)
+		} else if f, ok := frame.(*winFrame); !ok || len(f.webWindows) == 0 {
+			fail("website reported success but no browser window was recorded")
+		} else {
+			pass("website opened in its own browser window and maximised")
+		}
+		thePlatform.Undo(frame)
 	}
 
 	// window enumeration

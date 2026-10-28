@@ -8,132 +8,141 @@
 <link rel="icon" href="/icon.png">
 <style>
 :root{
-  --bg:#F2F2F7; --card:#FFFFFF; --text:#000; --sub:#8E8E93; --hair:rgba(60,60,67,.18); --fill:rgba(118,118,128,.12);
-  --accent:#D7036A; --accent-soft:rgba(215,3,106,.1); --green:#34C759; --red:#FF3B30;
-  --r:12px; color-scheme:light;
+  --bg:#FAFAF9; --card:#FFFFFF; --text:#1C1917; --sub:#78716C; --faint:#A8A29E; --line:#E7E5E4; --hover:#F5F5F4;
+  --ink:#1C1917; --ink-text:#FFFFFF; --accent:#D7036A; --bad:#B91C1C; --r:8px; color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
-  --bg:#000; --card:#1C1C1E; --text:#fff; --sub:#8E8E93; --hair:rgba(84,84,88,.6); --fill:rgba(118,118,128,.24);
-  --accent:#FF2D87; --accent-soft:rgba(255,45,135,.16); color-scheme:dark;
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0C0A09; --card:#161413; --text:#F5F5F4; --sub:#A8A29E; --faint:#57534E; --line:#292524; --hover:#1F1C1B;
+  --ink:#F5F5F4; --ink-text:#0C0A09; --accent:#F0418F; --bad:#F87171; color-scheme:dark;
 }}
 *{box-sizing:border-box;margin:0}
-html,body{background:var(--bg);color:var(--text);font:15px/1.4 -apple-system,"SF Pro Text","Segoe UI Variable Text","Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+html,body{background:var(--bg);color:var(--text);font:14px/1.5 "Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
-svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-.bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:14px;padding:12px max(16px,calc(50% - 440px));background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--hair)}
-.bar img{width:26px;height:26px}
-.bar h1{font-size:17px;font-weight:600;letter-spacing:-.01em;margin-right:auto}
-.ibtn{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;color:var(--accent)}
-.ibtn:hover{background:var(--fill)}
-.ibtn.on{background:var(--accent);color:#fff}
-.vol{display:flex;align-items:center;gap:4px}
-input[type=range]{-webkit-appearance:none;appearance:none;width:110px;height:4px;border-radius:2px;background:linear-gradient(var(--accent),var(--accent)) 0/var(--p,50%) 100% no-repeat,var(--fill)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25),0 0 0 .5px rgba(0,0,0,.08)}
-input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.bar{display:flex;align-items:center;gap:6px;max-width:760px;margin:0 auto;padding:22px 20px 6px}
+.bar img{width:22px;height:22px;margin-right:8px}
+.bar h1{font-size:15px;font-weight:600;letter-spacing:.01em;margin-right:auto}
+.ibtn{width:32px;height:32px;display:grid;place-items:center;border-radius:6px;color:var(--sub)}
+.ibtn:hover{background:var(--hover);color:var(--text)}
+.ibtn.on{color:var(--accent)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:96px;height:2px;background:linear-gradient(var(--text),var(--text)) 0/var(--p,50%) 100% no-repeat,var(--line);margin-right:8px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--text)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--text);border:0}
+input[type=range]:disabled{opacity:.3}
 
-main{max-width:880px;margin:0 auto;padding:8px 16px 120px}
-.head{display:flex;align-items:flex-end;justify-content:space-between;margin:28px 4px 8px}
-.head h2{font-size:13px;font-weight:400;color:var(--sub);text-transform:uppercase;letter-spacing:.02em}
-.link{color:var(--accent);font-size:15px}
-.link:hover{opacity:.7}
-.foot{font-size:13px;color:var(--sub);margin:8px 16px 0}
+main{max-width:760px;margin:0 auto;padding:0 20px 120px}
+.sec{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:36px 2px 10px}
+.sec h2{font-size:12px;font-weight:600;color:var(--sub);letter-spacing:.08em;text-transform:uppercase}
+.sec .meta{font-size:12.5px;color:var(--sub)}
+.link{color:var(--text);font-size:13px;text-decoration:underline;text-decoration-color:var(--faint);text-underline-offset:3px}
+.link:hover{text-decoration-color:var(--text)}
+.note{font-size:12.5px;color:var(--sub);margin:8px 2px 0}
 
-.group{background:var(--card);border-radius:var(--r);overflow:hidden}
-.row{display:flex;align-items:center;gap:12px;min-height:46px;padding:8px 16px;position:relative;text-align:left}
-.row+.row::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid var(--hair)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.row{display:flex;align-items:center;gap:14px;min-height:48px;padding:8px 16px;border-top:1px solid var(--line);text-align:left;width:100%}
+.row:first-child{border-top:0}
 .row .k{flex:1;min-width:0;white-space:nowrap}
+.row .k small{display:block;color:var(--sub);font-size:12px;white-space:normal}
+.row .v{color:var(--sub);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row.btnrow:hover{background:var(--hover)}
+.field{flex:2;min-width:0;display:flex;align-items:center;gap:8px}
+.field select{flex:none;width:112px}
 .row>input[type=text],.row>input[type=password]{flex:2}
-.row .v{color:var(--sub);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.row.stack{flex-direction:column;align-items:stretch;gap:8px;padding:12px 16px}
-.row input[type=text],.row input[type=password],.row select{border:0;background:transparent;text-align:right;outline:none;min-width:0;width:100%}
-.row.stack input[type=text],.row.stack textarea{text-align:left;background:var(--fill);border:0;border-radius:8px;padding:8px 10px;outline:none;width:100%}
-.row select{appearance:none;-webkit-appearance:none;color:var(--accent);cursor:pointer}
-textarea{resize:vertical;min-height:60px}
+input[type=text],input[type=password],select,textarea{background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 9px;min-width:0;width:100%;outline:none}
+input[type=text]:focus,input[type=password]:focus,select:focus,textarea:focus{border-color:var(--sub)}
+select{appearance:none;-webkit-appearance:none;padding-right:26px;cursor:pointer;width:auto;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%2378716C' stroke-width='1.4'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E") right 9px center no-repeat}
+select option,select optgroup{background:var(--card);color:var(--text)}
+textarea{resize:vertical;min-height:64px;width:100%}
 
-.sw{appearance:none;-webkit-appearance:none;width:51px;height:31px;border-radius:16px;background:var(--fill);position:relative;cursor:pointer;transition:background .2s;flex:none;margin:0}
-.sw::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2),0 0 0 .5px rgba(0,0,0,.04);transition:transform .2s}
-.sw:checked{background:var(--green)}
-.sw:checked::after{transform:translateX(20px)}
+/* checkbox */
+.cb{appearance:none;-webkit-appearance:none;width:18px;height:18px;border:1.5px solid var(--faint);border-radius:4px;flex:none;cursor:pointer;display:grid;place-items:center;margin:0}
+.cb:checked{background:var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 6.2l2.4 2.4 4.6-5'/%3E%3C/svg%3E") center no-repeat;border-color:var(--ink)}
+@media (prefers-color-scheme:dark){.cb:checked{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%230C0A09' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 6.2l2.4 2.4 4.6-5'/%3E%3C/svg%3E")}}
+label.row{cursor:pointer}
+label.row:hover{background:var(--hover)}
 
-.seg{display:inline-flex;flex-wrap:wrap;background:var(--fill);border-radius:9px;padding:2px;gap:2px}
-.seg button{padding:5px 12px;border-radius:7px;font-size:13px;color:var(--text)}
-.seg button[aria-pressed=true]{background:var(--card);box-shadow:0 2px 6px rgba(0,0,0,.12)}
+/* choice group */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;flex:none}
+.seg button{padding:5px 11px;font-size:13px;color:var(--sub)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--ink-text)}
 
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 16px;border-radius:10px;background:var(--fill);color:var(--accent);font-weight:500}
-.btn:hover{filter:brightness(.97)}
-.btn.fill{background:var(--accent);color:#fff}
-.kbd{display:inline-block;min-width:24px;padding:3px 10px;border-radius:7px;background:var(--fill);font-weight:500;font-size:13px;color:var(--text);text-align:center;border:1px solid transparent}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:6px;border:1px solid var(--line);font-weight:500;font-size:13px;flex:none}
+.btn:hover{background:var(--hover)}
+.btn.solid{background:var(--ink);color:var(--ink-text);border-color:var(--ink)}
+.btn.solid:hover{opacity:.88}
+.kbd{display:inline-block;padding:3px 10px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;font:500 12.5px/1.4 "Cascadia Code","Segoe UI",monospace;color:var(--text)}
+.kbd:hover{border-color:var(--faint)}
 .kbd.rec{border-color:var(--accent);color:var(--accent)}
-.kbd.empty{color:var(--sub)}
+.kbd.empty{color:var(--faint)}
 
-.hero{display:flex;align-items:center;gap:16px;padding:18px 16px;flex-wrap:wrap}
-.hero .glyph{width:52px;height:52px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center}
-.hero .glyph svg{width:28px;height:28px}
-.hero h3{font-size:20px;font-weight:600;letter-spacing:-.01em}
-.hero p{color:var(--sub);font-size:14px}
-.status{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--sub)}
-.status i{width:8px;height:8px;border-radius:50%;background:var(--sub)}
-.status.live{color:var(--accent)}.status.live i{background:var(--accent)}
+.swhead{display:flex;align-items:center;gap:16px;padding:18px 16px}
+.swhead h3{font-size:18px;font-weight:600;letter-spacing:-.01em}
+.swhead p{color:var(--sub);font-size:13px}
+.state{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--sub)}
+.state i{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.state.live{color:var(--accent)}.state.live i{background:var(--accent)}
+.sub{font-size:11.5px;font-weight:600;color:var(--sub);letter-spacing:.08em;text-transform:uppercase;padding:16px 16px 6px;border-top:1px solid var(--line)}
 
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.tile{position:relative;background:var(--card);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;text-align:left;min-height:118px;transition:transform .12s}
-.tile:active{transform:scale(.97)}
-.tile .glyph{width:40px;height:40px;border-radius:10px;background:var(--c);color:#fff;display:grid;place-items:center;font-weight:600;font-size:17px}
-.tile .nm{font-weight:500;font-size:15px;line-height:1.25}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.tile{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:18px;text-align:left;min-height:104px}
+.tile:hover{border-color:var(--faint)}
+.tile:active{transform:translateY(1px)}
+.tile .ic{color:var(--c);display:flex;justify-content:space-between;width:100%}
+.tile .ic svg{width:20px;height:20px}
+.tile .ltr{font-weight:600;color:var(--c)}
+.tile .nm{font-weight:500}
 .tile .hk{font-size:12px;color:var(--sub)}
-.tile.active{box-shadow:inset 0 0 0 2px var(--c)}
-.tile .dot{position:absolute;top:14px;right:14px;width:8px;height:8px;border-radius:50%;background:var(--c)}
-.tile .warn{position:absolute;top:12px;right:12px;font-size:11px;color:var(--red)}
-.tile.flash{animation:flash .35s}
-@keyframes flash{50%{background:var(--fill)}}
+.tile.active{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.tile .flag{font-size:11px;color:var(--bad)}
+.tile .on{font-size:11px;color:var(--accent)}
+.tile.flash{animation:flash .3s}
+@keyframes flash{50%{background:var(--hover)}}
 .editing .tile:not(.add){cursor:grab}
-.editing .tile:not(.add)::after{content:"Edit";position:absolute;right:14px;bottom:14px;font-size:13px;color:var(--accent)}
-.tile.drop{box-shadow:inset 0 0 0 2px var(--accent)}
-.tile.add{border:1.5px dashed var(--hair);background:transparent;align-items:center;justify-content:center;color:var(--accent)}
+.tile.drop{border-color:var(--text)}
+.tile.add{border-style:dashed;background:transparent;color:var(--sub);align-items:center;justify-content:center;gap:6px}
+.tile.add:hover{color:var(--text)}
 
-.mons{position:relative;height:96px;background:var(--fill);border-radius:10px}
-.mons button{position:absolute;border-radius:5px;background:var(--card);border:1.5px solid var(--hair);font-weight:600;color:var(--sub);font-size:14px}
-.mons button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.pill{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;visibility:hidden;display:flex;align-items:center;gap:14px;background:var(--ink);color:var(--ink-text);border-radius:8px;padding:6px 6px 6px 16px;transition:all .2s;z-index:20;font-size:13px}
+.pill.show{transform:translate(-50%,0);opacity:1;visibility:visible}
+.pill .btn{border-color:transparent;background:var(--ink-text);color:var(--ink)}
 
-.pill{position:fixed;left:50%;bottom:24px;transform:translate(-50%,160%);display:flex;align-items:center;gap:14px;background:var(--card);border-radius:28px;padding:8px 8px 8px 20px;box-shadow:0 10px 40px rgba(0,0,0,.18),0 0 0 .5px var(--hair);transition:transform .3s cubic-bezier(.2,.9,.3,1.2);z-index:20}
-.pill:not(.show){visibility:hidden;transition:transform .3s,visibility 0s .3s}
-.pill.show{transform:translate(-50%,0)}
-.pill .btn{border-radius:20px}
-
-dialog{margin:auto;border:0;padding:0;background:var(--bg);color:var(--text);border-radius:14px;width:min(560px,calc(100vw - 24px));max-height:min(88vh,860px);box-shadow:0 20px 70px rgba(0,0,0,.3)}
-dialog::backdrop{background:rgba(0,0,0,.35)}
-dialog[open]{animation:rise .28s cubic-bezier(.2,.9,.3,1)}
-@keyframes rise{from{transform:translateY(30px);opacity:0}}
-.sh{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px 16px;border-bottom:.5px solid var(--hair);background:var(--card)}
-.sh h3{font-size:17px;font-weight:600;text-align:center}
-.sh .l{justify-self:start}.sh .r{justify-self:end;font-weight:600}
-.sb{padding:4px 16px 24px;overflow:auto;max-height:calc(min(88vh,860px) - 56px)}
-.icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:6px}
-.icons button{height:40px;border-radius:10px;display:grid;place-items:center;color:var(--sub)}
-.icons button[aria-pressed=true]{background:var(--accent-soft);color:var(--accent)}
-.colors{display:flex;gap:10px;flex-wrap:wrap}
-.colors button{width:28px;height:28px;border-radius:50%}
-.colors button[aria-pressed=true]{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--c)}
+dialog{margin:auto;border:1px solid var(--line);padding:0;background:var(--bg);color:var(--text);border-radius:10px;width:min(580px,calc(100vw - 24px));max-height:min(88vh,860px);box-shadow:0 24px 60px rgba(0,0,0,.18)}
+dialog::backdrop{background:rgba(12,10,9,.4)}
+dialog[open]{animation:in .18s ease-out}
+@keyframes in{from{transform:translateY(8px);opacity:0}}
+.sh{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--card)}
+.sh h3{font-size:15px;font-weight:600;margin-right:auto}
+.sb{padding:4px 18px 24px;overflow:auto;max-height:calc(min(88vh,860px) - 62px)}
+.icons{display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:4px;padding:12px}
+.icons button{height:36px;border-radius:6px;display:grid;place-items:center;color:var(--sub)}
+.icons button:hover{background:var(--hover)}
+.icons button[aria-pressed=true]{background:var(--ink);color:var(--ink-text)}
+.colors{display:flex;gap:10px;flex-wrap:wrap;padding:0 12px 14px}
+.colors button{width:20px;height:20px;border-radius:50%}
+.colors button[aria-pressed=true]{box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--c)}
 .tools{display:flex;gap:2px;margin-left:auto}
-.tools button{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--sub)}
-.tools button:hover{background:var(--fill);color:var(--text)}
-.tools button:disabled{opacity:.3}
-.tools svg{width:18px;height:18px}
+.tools button{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--sub)}
+.tools button:hover{background:var(--hover);color:var(--text)}
+.tools button:disabled{opacity:.25}
+.step{flex-direction:column;align-items:stretch;gap:10px;padding:12px 16px}
 .step.off .lbl{opacity:.4}
-.n{width:22px;height:22px;border-radius:50%;background:var(--fill);font-size:12px;display:grid;place-items:center;color:var(--sub);flex:none}
+.n{font-size:12px;color:var(--sub);width:16px;flex:none}
+.err{color:var(--bad);font-size:13px;margin:10px 2px 0;min-height:1em}
+.picklist small{display:block;color:var(--sub);font-size:12px;white-space:normal}
+.log{font:12px/1.7 "Cascadia Mono",Consolas,monospace;color:var(--sub);max-height:220px;overflow:auto;padding:12px 16px}
+.log .warn,.log .error{color:var(--bad)}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--ink-text);border-radius:8px;padding:8px 14px;font-size:13px;z-index:40}
+.toast.bad{background:var(--bad);color:#fff}
 .hint{font-size:12.5px;color:var(--sub)}
-.err{color:var(--red);font-size:13px;margin:10px 4px 0;min-height:1em}
-.picklist button{width:100%}
-.picklist small{display:block;color:var(--sub);font-size:12px}
-.log{font:12px/1.6 ui-monospace,"Cascadia Mono",Consolas,monospace;color:var(--sub);max-height:220px;overflow:auto;padding:10px 16px}
-.log .warn,.log .error{color:var(--red)}
-.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--card);border-radius:12px;padding:10px 16px;box-shadow:0 8px 30px rgba(0,0,0,.15);font-size:14px;z-index:40}
-.toast.bad{color:var(--red)}
-@media (max-width:560px){.vol input{width:70px}}
+.mons{position:relative;height:90px;border:1px solid var(--line);border-radius:6px}
+.mons button{position:absolute;border-radius:3px;border:1px solid var(--line);background:var(--card);font-size:12px;color:var(--sub)}
+.mons button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--ink-text)}
+@media (max-width:560px){input[type=range]{width:60px}.row{flex-wrap:wrap}.field{flex-basis:100%}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -141,39 +150,37 @@ dialog[open]{animation:rise .28s cubic-bezier(.2,.9,.3,1)}
 <div class="bar">
   <img src="/logo.png" alt="">
   <h1>Praxis</h1>
-  <div class="vol">
-    <button class="ibtn" id="muteBtn" aria-label="Mute"></button>
-    <label class="sr" for="vol">Volume</label><input type="range" id="vol" min="0" max="100">
-  </div>
+  <button class="ibtn" id="muteBtn" aria-label="Mute"></button>
+  <label class="sr" for="vol">Volume</label><input type="range" id="vol" min="0" max="100">
   <button class="ibtn" id="micBtn" aria-label="Mute microphone"></button>
   <button class="ibtn" id="setBtn" aria-label="Settings"></button>
 </div>
 
 <main>
   <div id="banner"></div>
-  <div class="head"><h2>Switch</h2><span class="status" id="swStatus"><i></i><span>Ready</span></span></div>
-  <div class="group" id="switchCard"></div>
-  <p class="foot" id="swFoot"></p>
+  <div class="sec"><h2>Switch</h2><span class="state" id="swStatus"><i></i><span>Ready</span></span></div>
+  <div class="card" id="switchCard"></div>
+  <p class="note" id="swFoot"></p>
 
-  <div class="head"><h2>Shortcuts</h2><button class="link" id="editBtn">Edit</button></div>
+  <div class="sec"><h2>Shortcuts</h2><button class="link" id="editBtn">Edit</button></div>
   <div class="tiles" id="tiles"></div>
 </main>
 
-<div class="pill" id="pill" role="status" aria-live="polite"><span>Switched</span><button class="btn fill" id="returnBtn">Return</button></div>
+<div class="pill" id="pill" role="status" aria-live="polite"><span>Switched</span><button class="btn" id="returnBtn">Return</button></div>
 
 <dialog id="ed" aria-labelledby="edT">
-  <div class="sh"><button class="link l" id="edCancel">Cancel</button><h3 id="edT">Shortcut</h3><button class="link r" id="edSave">Done</button></div>
+  <div class="sh"><h3 id="edT">Shortcut</h3><button class="btn" id="edCancel">Cancel</button><button class="btn solid" id="edSave">Save</button></div>
   <div class="sb" id="edBody"></div>
 </dialog>
 
 <dialog id="st" aria-labelledby="stT">
-  <div class="sh"><span></span><h3 id="stT">Settings</h3><button class="link r" id="stDone">Done</button></div>
+  <div class="sh"><h3 id="stT">Settings</h3><button class="btn solid" id="stDone">Done</button></div>
   <div class="sb" id="stBody"></div>
 </dialog>
 
 <dialog id="pk" aria-labelledby="pkT">
-  <div class="sh"><button class="link l" id="pkCancel">Cancel</button><h3 id="pkT">Choose an App</h3><span></span></div>
-  <div class="sb"><p class="foot" style="margin:12px 4px">Open the app first, then choose its window.</p><div class="group picklist" id="pkList"></div></div>
+  <div class="sh"><h3 id="pkT">Choose an app</h3><button class="btn" id="pkCancel">Cancel</button></div>
+  <div class="sb"><p class="note" style="margin:14px 2px 10px">Open the app first, then choose its window.</p><div class="card picklist" id="pkList"></div></div>
 </dialog>
 
 <script>
@@ -226,7 +233,6 @@ function icon(name){
   const p = document.createElementNS(ns,'path'); p.setAttribute('d', P[name]||P.bolt); s.append(p);
   return s;
 }
-const glyph = m => m.icon && P[m.icon] ? icon(m.icon) : (m.name||'?').trim().charAt(0).toUpperCase();
 
 async function api(method, path, body){
   const o = {method, headers:{'X-Praxis-Token':TOKEN}};
@@ -298,13 +304,21 @@ const SW_TYPES = ['mute','media','minimize_foreground','minimize_apps','fill_scr
 let swDirty = false, swTimer = null;
 const swMacro = () => cfg.macros.find(m=>m.id==='switch');
 const swFocus = () => $('#switchCard').contains(document.activeElement) && document.activeElement.matches('input[type=text]');
+const isWeb = t => /^https?:\/\//i.test((t||'').trim());
+const swDraft = {}; // screen -> kind chosen but not filled in yet (not saved until it has a target)
 
 function swRead(m){
   const f = t => m.actions.find(a=>a.type===t && !a.disabled);
-  const fill = f('fill_screens');
+  const screens = {}; // monitor index -> {kind, target, match}
+  const all = (S.monitors||[]).map(x=>x.index);
+  for (const a of m.actions) {
+    if (a.type!=='fill_screens' || a.disabled) continue;
+    for (const n of (a.monitors && a.monitors.length ? a.monitors : all.length ? all : [1]))
+      screens[n] = {kind:isWeb(a.target)?'web':'app', target:a.target||'', match:a.match||''};
+  }
+  for (const [n,k] of Object.entries(swDraft)) if (!screens[n]) screens[n] = {kind:k, target:'', match:''};
   return {mute:!!f('mute'), media:!!f('media'), front:!!f('minimize_foreground'),
-    apps:(f('minimize_apps')||{}).match||'', mode:(f('minimize_foreground')||f('minimize_apps')||{}).mode||'minimize',
-    app:fill?.target||'', match:fill?.match||'', monitors:fill?.monitors||[]};
+    apps:(f('minimize_apps')||{}).match||'', mode:(f('minimize_foreground')||f('minimize_apps')||{}).mode||'minimize', screens};
 }
 function swWrite(m, o){
   const rest = m.actions.filter(a=>!SW_TYPES.includes(a.type));
@@ -313,15 +327,45 @@ function swWrite(m, o){
   if (o.media) acts.push({type:'media', target:'play_pause'});
   if (o.front) acts.push({type:'minimize_foreground', mode:o.mode});
   if (o.apps.trim()) acts.push({type:'minimize_apps', match:o.apps, mode:o.mode});
-  if (o.app.trim()) acts.push({type:'fill_screens', target:o.app.trim(), match:o.match||'', monitors:o.monitors, mode:'maximize', launch:true, timeout:6000});
+  // the main screen goes last so its window ends up focused
+  const mons = (S.monitors||[]).length ? [...S.monitors].sort((x,y)=>(x.primary?1:0)-(y.primary?1:0)) : [{index:1}];
+  for (const mon of mons) {
+    const sc = o.screens[mon.index];
+    if (!sc || sc.kind==='none' || !sc.target.trim()) continue;
+    acts.push({type:'fill_screens', target:sc.target.trim(), match:sc.kind==='app'?(sc.match||''):'', monitors:[mon.index], mode:'maximize', launch:true, timeout:6000});
+  }
   m.actions = [...acts, ...rest]; m.toggle = true; m.undoable = true;
 }
 function swSave(){
   swDirty = true; clearTimeout(swTimer);
   swTimer = setTimeout(async ()=>{
-    try{ await api('PUT','/api/config', cfg).then(c=>{ cfg = c; }); }catch(e){ toast(e.message, true); }
+    try{ cfg = await api('PUT','/api/config', cfg); }catch(e){ toast(e.message, true); }
     swDirty = false; sig=''; refresh();
-  }, 450);
+  }, 500);
+}
+
+function screenRow(mon, o, commit, single){
+  const sc = o.screens[mon.index] || {kind:'none', target:'', match:''};
+  const put = ()=>{
+    o.screens[mon.index] = sc;
+    if (sc.kind!=='none' && !sc.target.trim()) swDraft[mon.index] = sc.kind; else delete swDraft[mon.index];
+    commit();
+  };
+  const inp = h('input',{type:'text', value:sc.target, 'aria-label':(single?'':'Screen '+mon.index+' ')+(sc.kind==='web'?'web address':'app'),
+    placeholder: sc.kind==='web' ? 'https://' : 'C:\\Path\\App.exe', oninput:e=>{ sc.target=e.target.value; put(); }});
+  const kind = h('select',{'aria-label':(single?'Screen':'Screen '+mon.index)+' shows', onchange:e=>{
+      const k = e.target.value;
+      if (k==='none' || (k==='web') !== isWeb(sc.target)) { sc.target=''; sc.match=''; }
+      sc.kind = k; put(); sig=''; renderSwitch(); }},
+    h('option',{value:'none', selected:sc.kind==='none'},'Nothing'),
+    h('option',{value:'app', selected:sc.kind==='app'},'App'),
+    h('option',{value:'web', selected:sc.kind==='web'},'Website'));
+  const meta = single ? null : (mon.primary ? 'Main \u00b7 ' : '')+mon.w+' \u00d7 '+mon.h;
+  return h('div',{class:'row'},
+    h('span',{class:'k',style:{flex:'none',width:'120px'}}, single ? 'Show' : 'Screen '+mon.index, meta ? h('small',{}, meta) : null),
+    h('div',{class:'field'}, kind,
+      sc.kind==='none' ? h('span',{class:'hint'}, 'Left as it is') : inp,
+      sc.kind==='app' ? h('button',{class:'link', onclick:()=>pick(w=>{ sc.target=w.path; sc.match=w.exe; inp.value=w.path; put(); })}, 'Choose') : null));
 }
 
 function renderSwitch(){
@@ -335,27 +379,27 @@ function renderSwitch(){
   }
   const o = swRead(m);
   // look the macro up at change time: a background refresh may have replaced cfg
-  const set = (k,v)=>{ o[k]=v; const cur = swMacro(); if (cur){ swWrite(cur,o); swSave(); } };
+  const commit = ()=>{ const cur = swMacro(); if (cur){ swWrite(cur,o); swSave(); } };
+  const set = (k,v)=>{ o[k]=v; commit(); };
   const hk = S.hotkeys[m.id], live = (S.active||[]).includes('switch');
   const st = $('#swStatus'); st.classList.toggle('live', live); st.lastChild.textContent = live ? 'Switched' : (S.paused ? 'Keys paused' : 'Ready');
-  const appInput = h('input',{type:'text', value:o.app, placeholder:'Choose an app', 'aria-label':'App to show', oninput:e=>set('app', e.target.value)});
+  const mons = (S.monitors||[]).length ? S.monitors : [{index:1,primary:true,w:0,h:0}];
   card.replaceChildren(
-    h('div',{class:'hero'},
-      h('div',{class:'glyph'}, icon('monitor')),
-      h('div',{style:{flex:'1',minWidth:'200px'}}, h('h3',{},'Switch'),
-        h('p',{}, 'One key hides what you\u2019re doing and puts your work on screen. Press it again to go back.')),
-      h('button',{class:'btn fill', onclick:()=>run(m)}, live ? 'Return' : 'Try it')),
+    h('div',{class:'swhead'},
+      h('div',{style:{flex:'1'}}, h('h3',{},'Switch'), h('p',{}, 'Press the key to hide what you\u2019re doing and show your work. Press it again to go back.')),
+      h('button',{class:'btn solid', onclick:()=>run(m)}, live ? 'Return' : 'Try it')),
     h('div',{class:'row'}, h('span',{class:'k'},'Key'), hotkeyChip(m.hotkey, v=>{ const cur = swMacro(); if (cur){ cur.hotkey=v; swSave(); } })),
-    h('div',{class:'row'}, h('span',{class:'k'},'Show'), h('div',{style:{flex:'2',display:'flex',gap:'10px',alignItems:'center'}}, appInput,
-      h('button',{class:'link', onclick:()=>pick(w=>{ o.match=w.exe; appInput.value=w.path; set('app', w.path); })}, 'Choose'))),
-    (S.monitors||[]).length>1 ? h('div',{class:'row stack'}, h('span',{},'On screens'), monitorPicker(o.monitors, v=>set('monitors', v))) : null,
-    h('div',{class:'row'}, h('span',{class:'k'},'Mute sound'), sw(o.mute, v=>set('mute',v))),
-    h('div',{class:'row'}, h('span',{class:'k'},'Pause media'), sw(o.media, v=>set('media',v))),
-    h('div',{class:'row'}, h('span',{class:'k'},'Hide the active window'), sw(o.front, v=>set('front',v))),
-    h('div',{class:'row'}, h('span',{class:'k'},'Also hide'), h('input',{type:'text', value:o.apps, placeholder:'Netflix, YouTube', 'aria-label':'Also hide', oninput:e=>set('apps', e.target.value)})),
+    h('div',{class:'sub'}, mons.length>1 ? 'Screens' : 'Screen'),
+    ...mons.map(mon=>screenRow(mon, o, commit, mons.length===1)),
+    h('div',{class:'sub'}, 'While switched'),
+    check('Mute sound', o.mute, v=>set('mute',v)),
+    check('Pause media', o.media, v=>set('media',v)),
+    check('Hide the active window', o.front, v=>set('front',v)),
+    h('div',{class:'row'}, h('span',{class:'k',style:{flex:'none',width:'120px'}},'Also hide'),
+      h('div',{class:'field'}, h('input',{type:'text', value:o.apps, placeholder:'Netflix, YouTube', 'aria-label':'Also hide', oninput:e=>set('apps', e.target.value)}))),
     h('div',{class:'row'}, h('span',{class:'k'},'Hide by'), seg([['minimize','Minimising'],['hide','Removing from taskbar']], o.mode, v=>set('mode',v))));
   $('#swFoot').textContent = hk && hk!=='ok' && hk!=='paused' ? 'That key is already used by another app. Pick another.' :
-    'Also hide matches window titles or program names, separated by commas.';
+    'Websites open in their own browser window and close again when you return. Also hide matches window titles or program names.';
 }
 
 // ---------- tiles ----------
@@ -367,9 +411,9 @@ function renderTiles(){
     const st = S.hotkeys[m.id], bad = m.hotkey && st && st!=='ok' && st!=='paused';
     const t = h('button',{class:'tile'+(active.has(m.id)?' active':''), style:{'--c':m.color}, draggable:editMode?'true':'false',
       'aria-label':(editMode?'Edit ':'')+m.name, onclick:()=> editMode ? openEditor(i) : (flash(t), run(m))},
-      h('span',{class:'glyph'}, glyph(m)),
-      h('span',{}, h('span',{class:'nm'}, m.name), h('br'), h('span',{class:'hk'}, m.hotkey||'No key')),
-      bad ? h('span',{class:'warn'},'Key in use') : active.has(m.id) ? h('span',{class:'dot'}) : null);
+      h('span',{class:'ic'}, m.icon && P[m.icon] ? icon(m.icon) : h('span',{class:'ltr'}, (m.name||'?').trim().charAt(0).toUpperCase()),
+        bad ? h('span',{class:'flag'},'Key in use') : active.has(m.id) ? h('span',{class:'on'},'On') : editMode ? h('span',{class:'hint'},'Edit') : null),
+      h('span',{}, h('span',{class:'nm'}, m.name), h('br'), h('span',{class:'hk'}, m.hotkey||'No key')));
     if (editMode){
       t.addEventListener('dragstart', e=>e.dataTransfer.setData('text/plain', i));
       t.addEventListener('dragover', e=>{ e.preventDefault(); t.classList.add('drop'); });
@@ -377,7 +421,7 @@ function renderTiles(){
       t.addEventListener('drop', e=>{ e.preventDefault(); t.classList.remove('drop'); move(+e.dataTransfer.getData('text/plain'), i); });
     }
     return t;
-  }), h('button',{class:'tile add', onclick:()=>openEditor(null)}, icon('plus'), h('span',{},'New Shortcut')));
+  }), h('button',{class:'tile add', onclick:()=>openEditor(null)}, icon('plus'), h('span',{},'New shortcut')));
 }
 function flash(t){ t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash'); }
 $('#editBtn').onclick = ()=>{ editMode = !editMode; $('#editBtn').textContent = editMode?'Done':'Edit'; sig=''; render(); };
@@ -394,7 +438,9 @@ async function move(from, to){
 }
 
 // ---------- controls ----------
-function sw(on, cb){ return h('input',{type:'checkbox', class:'sw', checked:!!on, role:'switch', onchange:e=>cb(e.target.checked)}); }
+function sw(on, cb){ return h('input',{type:'checkbox', class:'cb', checked:!!on, onchange:e=>cb(e.target.checked)}); }
+// a whole-row checkbox: label left, box right, the full row is clickable
+function check(label, on, cb, note){ return h('label',{class:'row'}, h('span',{class:'k'}, label, note ? h('small',{}, note) : null), sw(on, cb)); }
 function seg(opts, val, cb){
   const box = h('div',{class:'seg', role:'group'});
   const draw = v => box.replaceChildren(...opts.map(([k,l])=>h('button',{type:'button','aria-pressed':String(k===v), onclick:()=>{ draw(k); cb(k); }}, l)));
@@ -489,9 +535,9 @@ $('#pkCancel').onclick = ()=>$('#pk').close();
 
 // ---------- shortcut editor ----------
 function openEditor(index, preset){
-  const m = preset || (index==null ? {id:'',name:'',icon:'bolt',color:'#007AFF',hotkey:'',toggle:false,undoable:false,remote:true,actions:[]} : structuredClone(cfg.macros[index]));
+  const m = preset || (index==null ? {id:'',name:'',icon:'bolt',color:'#1C1917',hotkey:'',toggle:false,undoable:false,remote:true,actions:[]} : structuredClone(cfg.macros[index]));
   ed = {index, m};
-  $('#edT').textContent = index==null ? 'New Shortcut' : 'Edit Shortcut';
+  $('#edT').textContent = index==null ? 'New shortcut' : 'Edit shortcut';
   drawEditor(); $('#ed').showModal();
 }
 // 'close' fires asynchronously: ignore it if the editor was already reopened.
@@ -504,30 +550,30 @@ $('#edSave').onclick = async ()=>{
   try{ await saveConfig(next); $('#ed').close(); }catch(e){ $('#edErr').textContent = e.message; }
 };
 function drawEditor(){
-  const m = ed.m, steps = h('div',{class:'group'});
+  const m = ed.m, steps = h('div',{class:'card'});
   const add = h('select',{'aria-label':'Add a step', style:{textAlign:'left'}, onchange:e=>{ if (!e.target.value) return; const a={type:e.target.value}; defaults(a); m.actions.push(a); drawEditor(); }},
-    h('option',{value:''},'Add a Step'), ...stepOptions());
+    h('option',{value:''},'Add a step'), ...stepOptions());
   $('#edBody').replaceChildren(
-    h('div',{class:'group',style:{marginTop:'16px'}},
+    h('div',{class:'card',style:{marginTop:'16px'}},
       h('div',{class:'row'}, h('label',{class:'k',for:'eName'},'Name'), h('input',{id:'eName',type:'text',value:m.name,placeholder:'Name',maxlength:80,oninput:e=>{ m.name=e.target.value; }})),
       h('div',{class:'row'}, h('span',{class:'k'},'Key'), hotkeyChip(m.hotkey, v=>{ m.hotkey=v; })),
-      h('div',{class:'row'}, h('span',{class:'k'},'Press again to undo'), sw(m.toggle, v=>{ m.toggle=v; })),
-      h('div',{class:'row'}, h('span',{class:'k'},'Undo with Return'), sw(m.undoable, v=>{ m.undoable=v; })),
-      h('div',{class:'row'}, h('span',{class:'k'},'Show on phone'), sw(m.remote, v=>{ m.remote=v; }))),
-    h('div',{class:'head'}, h('h2',{},'Look')),
-    h('div',{class:'group',style:{padding:'12px'}},
+      check('Press again to undo', m.toggle, v=>{ m.toggle=v; }),
+      check('Undo with Return', m.undoable, v=>{ m.undoable=v; }),
+      check('Show on phone', m.remote, v=>{ m.remote=v; })),
+    h('div',{class:'sec'}, h('h2',{},'Icon')),
+    h('div',{class:'card'},
       h('div',{class:'icons'}, ...TILE_ICONS.map(n=>h('button',{type:'button','aria-label':n,'aria-pressed':String(m.icon===n), onclick:()=>{ m.icon=n; drawEditor(); }}, icon(n)))),
-      h('div',{class:'colors',style:{marginTop:'12px'}}, ...COLORS.map(c=>h('button',{type:'button',style:{background:c,'--c':c},'aria-label':'Colour '+c,'aria-pressed':String(m.color===c), onclick:()=>{ m.color=c; drawEditor(); }})))),
-    h('div',{class:'head'}, h('h2',{},'Steps')),
+      h('div',{class:'colors'}, ...COLORS.map(c=>h('button',{type:'button',style:{background:c,'--c':c},'aria-label':'Colour '+c,'aria-pressed':String(m.color===c), onclick:()=>{ m.color=c; drawEditor(); }})))),
+    h('div',{class:'sec'}, h('h2',{},'Steps')),
     steps,
-    h('div',{class:'group',style:{marginTop:'12px'}}, h('div',{class:'row'}, add)),
+    h('div',{class:'card',style:{marginTop:'12px'}}, h('div',{class:'row'}, add)),
     h('p',{class:'err',id:'edErr',role:'alert'}),
-    ed.index!=null ? h('div',{class:'group',style:{marginTop:'16px'}},
-      h('button',{class:'row',type:'button',style:{width:'100%',color:'var(--accent)'}, onclick:()=>{ const c=structuredClone(m); c.id=''; c.name+=' Copy'; c.hotkey=''; $('#ed').close(); setTimeout(()=>openEditor(null,c),0); }}, 'Duplicate'),
-      h('button',{class:'row',type:'button',style:{width:'100%',color:'var(--red)'}, onclick:async()=>{
+    ed.index!=null ? h('div',{class:'card',style:{marginTop:'16px'}},
+      h('button',{class:'row btnrow',type:'button', onclick:()=>{ const c=structuredClone(m); c.id=''; c.name+=' copy'; c.hotkey=''; $('#ed').close(); setTimeout(()=>openEditor(null,c),0); }}, 'Duplicate'),
+      h('button',{class:'row btnrow',type:'button',style:{color:'var(--bad)'}, onclick:async()=>{
         if (!confirm('Delete '+(m.name||'this shortcut')+'?')) return;
         const next = structuredClone(cfg); next.macros.splice(ed.index,1);
-        try{ await saveConfig(next); $('#ed').close(); }catch(e){ $('#edErr').textContent=e.message; } }}, 'Delete Shortcut')) : null);
+        try{ await saveConfig(next); $('#ed').close(); }catch(e){ $('#edErr').textContent=e.message; } }}, 'Delete shortcut')) : null);
   drawSteps(steps);
 }
 function stepOptions(sel){
@@ -545,10 +591,10 @@ function drawSteps(box){
   if (!s.length){ box.replaceChildren(h('div',{class:'row'}, h('span',{class:'k hint'},'No steps yet. Add one below.'))); return; }
   box.replaceChildren(...s.map((a,i)=>{
     const fields = (ACTIONS[a.type]||[])[2]||[];
-    return h('div',{class:'row stack step'+(a.disabled?' off':'')},
+    return h('div',{class:'row step'+(a.disabled?' off':'')},
       h('div',{class:'lbl',style:{display:'flex',alignItems:'center',gap:'10px'}},
         h('span',{class:'n'}, i+1),
-        h('select',{'aria-label':'Step '+(i+1), style:{textAlign:'left',color:'var(--text)',width:'auto',flex:'1'},
+        h('select',{'aria-label':'Step '+(i+1), style:{border:'0',paddingLeft:'0',fontWeight:'500'},
           onchange:e=>{ s[i]={type:e.target.value}; defaults(s[i]); drawEditor(); }}, ...stepOptions(a.type)),
         h('span',{class:'tools'},
           h('button',{type:'button',title:a.disabled?'Turn on':'Turn off','aria-label':(a.disabled?'Turn on':'Turn off')+' step '+(i+1), onclick:()=>{ a.disabled=!a.disabled; drawEditor(); }}, icon(a.disabled?'eye-off':'eye')),
@@ -595,36 +641,32 @@ async function setSetting(fn){
   try{ await saveConfig(next); }catch(e){ toast(e.message,true); }
   drawSettings();
 }
-function grp(...rows){ return h('div',{class:'group'}, ...rows); }
-function srow(label, ctl){ return h('div',{class:'row'}, h('span',{class:'k'},label), ctl); }
-function arow(label, color, fn){ return h('button',{class:'row',type:'button',style:{width:'100%',color}, onclick:fn}, label); }
+function grp(...rows){ return h('div',{class:'card'}, ...rows); }
+function arow(label, color, fn){ return h('button',{class:'row btnrow',type:'button',style:{color}, onclick:fn}, label); }
 function drawSettings(){
   const s = S.config.settings, r = s.remote;
   const addr = !S.remote.running ? 'Off' : (S.remote.urls||[]).join('  ') || 'Port '+r.port;
   const pin = h('input',{type:'password',placeholder:r.hasPin?'Change PIN':'Choose a PIN',autocomplete:'new-password',maxlength:32,'aria-label':'PIN'});
   $('#stBody').replaceChildren(
-    h('div',{class:'head'}, h('h2',{},'General')),
-    grp(srow('Start with Windows', sw(s.runAtStartup, v=>setSetting(x=>x.runAtStartup=v))),
-        srow('Open this window on start', sw(s.openDeckOnLaunch, v=>setSetting(x=>x.openDeckOnLaunch=v))),
-        srow('Keep the Switch app ready', sw(s.prewarmApps, v=>setSetting(x=>x.prewarmApps=v))),
-        srow('Keys active', sw(!S.paused, v=>api('POST','/api/hotkeys',{paused:!v}).then(refresh)))),
-    h('p',{class:'foot'},'Keep ready opens the Switch app minimised at start, so switching is instant.'),
-    h('div',{class:'head'}, h('h2',{},'Discretion')),
-    grp(srow('Tray icon', sw(!s.hideTray, v=>setSetting(x=>x.hideTray=!v))),
-        srow('Notifications', sw(s.notifyOnRun, v=>setSetting(x=>x.notifyOnRun=v))),
-        srow('Keep history on disk', sw(s.keepLog, v=>setSetting(x=>x.keepLog=v)))),
-    h('p',{class:'foot'},'With the tray icon off, open Praxis again from its file to show this window. History stays in memory unless kept on disk.'),
-    h('div',{class:'head'}, h('h2',{},'Phone')),
-    grp(h('div',{class:'row'}, h('span',{class:'k'},'PIN'), pin, h('button',{class:'link',onclick:async()=>{
-          try{ await api('POST','/api/pin',{pin:pin.value}); pin.value=''; toast('PIN saved'); await refresh(); drawSettings(); }catch(e){ toast(e.message,true); } }},'Save')),
-        srow('Use from phone', sw(r.enabled, v=>setSetting(x=>x.remote.enabled=v))),
-        srow('Address', h('span',{class:'v',style:{userSelect:'all'}}, addr))),
-    h('p',{class:'foot'},'Same Wi-Fi only. PIN of 6 or more characters; five wrong tries locks out for five minutes. Not encrypted, so trusted networks only.'),
-    h('div',{class:'head'}, h('h2',{},'Shortcuts')),
-    grp(arow('Export','var(--accent)',exportCfg), arow('Import','var(--accent)',()=>imp.click()), arow('Reset to Originals','var(--red)',resetCfg)),
-    h('div',{class:'head'}, h('h2',{},'Activity')),
+    h('div',{class:'sec'}, h('h2',{},'General')),
+    grp(check('Start with Windows', s.runAtStartup, v=>setSetting(x=>x.runAtStartup=v)),
+        check('Open this window on start', s.openDeckOnLaunch, v=>setSetting(x=>x.openDeckOnLaunch=v)),
+        check('Keep Switch apps ready', s.prewarmApps, v=>setSetting(x=>x.prewarmApps=v), 'Opens them minimised at start so switching is instant.'),
+        check('Keys active', !S.paused, v=>api('POST','/api/hotkeys',{paused:!v}).then(refresh))),
+    h('div',{class:'sec'}, h('h2',{},'Discretion')),
+    grp(check('Tray icon', !s.hideTray, v=>setSetting(x=>x.hideTray=!v), 'Off: open Praxis again from its file to show this window.'),
+        check('Notifications', s.notifyOnRun, v=>setSetting(x=>x.notifyOnRun=v)),
+        check('Keep history on disk', s.keepLog, v=>setSetting(x=>x.keepLog=v), 'Off: history lives in memory and is gone when Praxis closes.')),
+    h('div',{class:'sec'}, h('h2',{},'Phone')),
+    grp(h('div',{class:'row'}, h('span',{class:'k',style:{flex:'none',width:'120px'}},'PIN'), h('div',{class:'field'}, pin, h('button',{class:'btn',onclick:async()=>{
+          try{ await api('POST','/api/pin',{pin:pin.value}); pin.value=''; toast('PIN saved'); await refresh(); drawSettings(); }catch(e){ toast(e.message,true); } }},'Save'))),
+        check('Use from phone', r.enabled, v=>setSetting(x=>x.remote.enabled=v), 'Same Wi-Fi only. Five wrong PINs locks out for five minutes. Not encrypted.'),
+        h('div',{class:'row'}, h('span',{class:'k'},'Address'), h('span',{class:'v',style:{userSelect:'all'}}, addr))),
+    h('div',{class:'sec'}, h('h2',{},'Shortcuts')),
+    grp(arow('Export', '', exportCfg), arow('Import', '', ()=>imp.click()), arow('Reset to originals', 'var(--bad)', resetCfg)),
+    h('div',{class:'sec'}, h('h2',{},'Activity')),
     grp(h('div',{class:'log'}, ...(S.log||[]).slice(-60).reverse().map(e=>h('div',{class:e.level}, new Date(e.time).toLocaleTimeString()+'  '+e.msg)))),
-    h('p',{class:'foot'},'Praxis '+S.version));
+    h('p',{class:'note'},'Praxis '+S.version));
 }
 const imp = h('input',{type:'file',accept:'.json,application/json',hidden:true,onchange:async e=>{
   const f = e.target.files[0]; e.target.value=''; if (!f) return;

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -26,7 +27,9 @@ type winFrame struct {
 	hidden        []uintptr
 	moved         []savedWin
 	launched      []uintptr
+	webWindows    []uintptr
 	closeLaunched bool
+	closeWeb      bool
 	mediaUndo     []string
 	prevFG        uintptr
 }
@@ -63,6 +66,14 @@ func (p *winPlatform) Run(m *Macro, restore func()) (any, error) {
 	defer runtime.UnlockOSThread()
 
 	f := &winFrame{prevFG: foreground()}
+	if m.Undoable {
+		// Discretion: the Praxis window itself never stays on screen during a switch.
+		for _, w := range appWindows() {
+			if w.title == "Praxis" && isBrowserExe(w.exe) {
+				f.stash(w.hwnd, false)
+			}
+		}
+	}
 	used := map[uintptr]bool{} // windows already placed in this run
 	var errs []string
 	for i, a := range m.Actions {
@@ -249,14 +260,28 @@ func (p *winPlatform) fillScreens(a *Action, f *winFrame, used map[uintptr]bool)
 	if match == "" {
 		match = matchFromTarget(a.Target)
 	}
+	target, args := a.Target, a.Args
+	web := isWebTarget(a.Target)
+	if web {
+		browser := findBrowser()
+		if browser == "" {
+			return errors.New("websites need Microsoft Edge or Google Chrome installed")
+		}
+		target = browser
+		args = "--new-window " + syscall.EscapeArg(strings.TrimSpace(a.Target))
+		match = filepath.Base(browser)
+		f.closeWeb = true // close the page window on Return rather than leaving it behind
+	}
 	if a.CloseOnRestore {
 		f.closeLaunched = true
 	}
 
 	var existing []winRef
-	for _, w := range findWindows(match) {
-		if !used[w.hwnd] {
-			existing = append(existing, w)
+	if !web { // never reuse an existing browser window: it shows something else
+		for _, w := range findWindows(match) {
+			if !used[w.hwnd] {
+				existing = append(existing, w)
+			}
 		}
 	}
 	var placed []uintptr
@@ -273,7 +298,7 @@ func (p *winPlatform) fillScreens(a *Action, f *winFrame, used map[uintptr]bool)
 			for k := range used {
 				known[k] = true
 			}
-			if err := shellOpen(a.Target, a.Args, SW_SHOWNORMAL); err != nil {
+			if err := shellOpen(target, args, SW_SHOWNORMAL); err != nil {
 				return err
 			}
 			w, ok := waitForNewWindow(match, known, time.Duration(a.Timeout)*time.Millisecond)
@@ -283,6 +308,9 @@ func (p *winPlatform) fillScreens(a *Action, f *winFrame, used map[uintptr]bool)
 			}
 			h = w.hwnd
 			f.launched = append(f.launched, h)
+			if web {
+				f.webWindows = append(f.webWindows, h)
+			}
 		} else {
 			if i == 0 {
 				errs = append(errs, fmt.Sprintf("%q is not running (enable 'launch if needed')", match))
@@ -333,6 +361,11 @@ func (f *winFrame) unstash(h uintptr) (WINDOWPLACEMENT, bool) {
 	return wp, found
 }
 
+func isBrowserExe(exe string) bool {
+	e := strings.ToLower(exe)
+	return e == "msedge.exe" || e == "chrome.exe"
+}
+
 func contains(s []uintptr, h uintptr) bool {
 	for _, x := range s {
 		if x == h {
@@ -354,7 +387,7 @@ func (p *winPlatform) Undo(frame any) {
 		if !isWindow(h) {
 			continue
 		}
-		if f.closeLaunched {
+		if f.closeLaunched || (f.closeWeb && contains(f.webWindows, h)) {
 			pPostMessageW.Call(h, WM_CLOSE, 0, 0)
 		} else {
 			showWindow(h, SW_MINIMIZE)
@@ -406,7 +439,7 @@ func (p *winPlatform) Prewarm(macros []Macro) {
 	seen := map[string]bool{}
 	for _, m := range macros {
 		for _, a := range m.Actions {
-			if a.Type != "fill_screens" || a.Disabled || !a.Launch || a.Target == "" {
+			if a.Type != "fill_screens" || a.Disabled || !a.Launch || a.Target == "" || isWebTarget(a.Target) {
 				continue
 			}
 			match := a.Match
