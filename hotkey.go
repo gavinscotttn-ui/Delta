@@ -69,21 +69,6 @@ var keyAliases = map[string]string{
 	"arrowleft": "Left", "arrowright": "Right", "arrowup": "Up", "arrowdown": "Down",
 }
 
-// keys that should not be bound without a modifier because they break normal typing
-func needsModifier(key string) bool {
-	if len(key) == 1 {
-		return true // letters and digits
-	}
-	switch key {
-	case "Space", "Enter", "Esc", "Tab", "Backspace", "Left", "Right", "Up", "Down",
-		"Home", "End", "PageUp", "PageDown", "Delete", "Insert",
-		"Semicolon", "Equal", "Comma", "Minus", "Period", "Slash", "Backquote",
-		"BracketLeft", "Backslash", "BracketRight", "Quote":
-		return true
-	}
-	return false
-}
-
 func canonicalKey(tok string) (string, bool) {
 	if a, ok := keyAliases[strings.ToLower(tok)]; ok {
 		return a, true
@@ -143,9 +128,6 @@ func ParseHotkey(s string) (Hotkey, error) {
 	h, err := parseChord(s)
 	if err != nil {
 		return h, err
-	}
-	if h.Mods == 0 && needsModifier(h.Key) {
-		return Hotkey{}, fmt.Errorf("%s alone would block normal typing; add Ctrl, Alt, Shift or Win", h.Key)
 	}
 	if h.Key == "Pause" && h.Mods&modControl != 0 {
 		return Hotkey{}, errors.New("Ctrl+Pause is sent as Break by Windows and cannot be used; try Shift+Pause or Alt+Pause")

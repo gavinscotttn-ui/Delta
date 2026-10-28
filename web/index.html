@@ -399,6 +399,7 @@ function renderSwitch(){
       h('div',{class:'field'}, h('input',{type:'text', value:o.apps, placeholder:'Netflix, YouTube', 'aria-label':'Also hide', oninput:e=>set('apps', e.target.value)}))),
     h('div',{class:'row'}, h('span',{class:'k'},'Hide by'), seg([['minimize','Minimising'],['hide','Removing from taskbar']], o.mode, v=>set('mode',v))));
   $('#swFoot').textContent = hk && hk!=='ok' && hk!=='paused' ? 'That key is already used by another app. Pick another.' :
+    TYPING_KEYS.test(m.hotkey||'') ? m.hotkey+' is reserved for Switch, so it won\u2019t do its usual job in other apps. Pause keys in Settings if you need it.' :
     'Websites open in their own browser window and close again when you return. Also hide matches window titles or program names.';
 }
 
@@ -481,6 +482,8 @@ function keyName(e){
   if (e.key==='Pause') return 'Pause';
   return CODES[c]||null;
 }
+// keys that do something useful on their own; binding them alone needs a confirmation
+const TYPING_KEYS = /^([A-Z0-9]|Space|Enter|Esc|Tab|Backspace|Left|Right|Up|Down|Home|End|PageUp|PageDown|Delete|Insert|Semicolon|Equal|Comma|Minus|Period|Slash|Backquote|BracketLeft|Backslash|BracketRight|Quote)$/;
 let rec = null;
 function hotkeyChip(val, cb, global=true){
   const chip = h('button',{type:'button', class:'kbd'+(val?'':' empty'), title:'Click, then press the keys. Backspace clears.'}, val||'None');
@@ -508,6 +511,13 @@ document.addEventListener('keydown', e=>{
   if ((e.key==='Backspace'||e.key==='Delete') && plain){ const r = rec; r.val=''; r.chip.classList.add('empty'); r.cb(''); r.chip.textContent='None'; stopRec(); return; }
   const k = keyName(e); if (!k) return;
   const v = [e.ctrlKey&&'Ctrl', e.altKey&&'Alt', e.shiftKey&&'Shift', e.metaKey&&'Win', k].filter(Boolean).join('+');
+  if (rec.global && plain && TYPING_KEYS.test(k)) {
+    const r = rec; stopRec();
+    if (!confirm(k+' on its own will stop doing its normal job in every app while Praxis is running'+
+      (k==='Home'||k==='End' ? ' (for example, jumping to the start or end of a line)' : '')+
+      '.\n\nYou can pause keys any time in Settings. Use '+k+' anyway?')) return;
+    r.val = v; r.chip.textContent = v; r.chip.classList.remove('empty'); r.cb(v); return;
+  }
   const r = rec; r.val = v; r.chip.textContent = v; r.chip.classList.remove('empty'); r.cb(v); stopRec();
 }, true);
 

@@ -20,7 +20,12 @@ func TestParseHotkey(t *testing.T) {
 			t.Errorf("ParseHotkey(%q) = %q, %v; want %q", in, h, err, want)
 		}
 	}
-	for _, bad := range []string{"", "P", "Space", "Ctrl+", "Ctrl+Pause", "Ctrl+Foo", "P+Ctrl", "Ctrl++P"} {
+	for _, bare := range []string{"Home", "End", "Insert", "P"} {
+		if _, err := ParseHotkey(bare); err != nil {
+			t.Errorf("bare %s should be allowed (with a warning in the deck): %v", bare, err)
+		}
+	}
+	for _, bad := range []string{"", "Ctrl+", "Ctrl+Pause", "Ctrl+Foo", "P+Ctrl", "Ctrl++P"} {
 		if _, err := ParseHotkey(bad); err == nil {
 			t.Errorf("ParseHotkey(%q) should fail", bad)
 		}
