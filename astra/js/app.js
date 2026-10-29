@@ -451,6 +451,8 @@
   const extensionId = window.chrome?.runtime?.id || "";
   /* The key that opens Astra Lite, as set in the browser (it can be changed there, or left unset). */
   let liteKey = "";
+  /* In Praxis, its own keys work from any app. */
+  const praxisKey = (type) => (praxis()?.keyFor?.(type) || "").replaceAll("+", " ");
   window.chrome?.commands
     ?.getAll?.()
     .then(
@@ -1192,7 +1194,8 @@
       modalHead("Keyboard shortcuts") +
         `<div class="modal-body"><table class="keys-table"><tbody>
         ${row(["Ctrl K"], "Search everything")}
-        ${liteKey ? row([liteKey], "Praxis Lite, on top of any page") : ""}
+        ${praxis() ? (praxisKey("open_lite") ? row([praxisKey("open_lite")], "Praxis Lite, on top of any app") : "") : liteKey ? row([liteKey], "Praxis Lite, on top of any page") : ""}
+        ${praxisKey("triage_clipboard") ? row([praxisKey("triage_clipboard")], "Triage the email you copied, from any app") : ""}
         ${row(["/"], "Search on Home")}
         ${row(["Ctrl Enter"], "Triage the pasted email")}
         ${row(["Enter"], "Ask the question")}
@@ -3022,7 +3025,14 @@
            : ""
        }
        <p class="hint">Press <kbd>Ctrl K</kbd> to search everything, <kbd>?</kbd> for every shortcut, and paste a customer email on Home to triage it.${
-         extensionId
+         praxis()
+           ? [
+               praxisKey("triage_clipboard") && ` From any app, copy a customer's email and press <kbd>${esc(praxisKey("triage_clipboard"))}</kbd> to triage it.`,
+               praxisKey("open_lite") && ` <kbd>${esc(praxisKey("open_lite"))}</kbd> opens Praxis Lite, which finds replies and numbers on top of whatever you are doing.`,
+             ]
+               .filter(Boolean)
+               .join("")
+           : extensionId
            ? ` On any other page, select a customer's email, right-click and choose <b>Triage with Praxis</b>; Praxis Lite in the toolbar${liteKey ? ` (<kbd>${esc(liteKey)}</kbd>)` : ""} finds replies and numbers on top of whatever you are doing.`
            : ""
        }</p>`,
@@ -3903,6 +3913,8 @@
       const box = $("#praxisButtons");
       if (box) box.innerHTML = praxisButtonsList();
     },
+    /* "guide=<id>" or "reply=<situation>|<stage>", sent by Praxis Lite. */
+    openLink: (target) => openFromLink("#" + target),
     modalOpen: () => modalLayer.classList.contains("open"),
     closeModal: () => closeModal(),
     /* Templates made in Praxis before the merge; added once, never twice. */
@@ -3925,16 +3937,16 @@
 
   /* #guide=<id> and #reply=<situation>|<stage> come from Astra Lite; #triage=<id> from the right-click menu or Astra
      Lite. They carry ids only, never customer details, and are cleared at once so a reload does not repeat them. */
-  function openFromLink() {
+  function openFromLink(link) {
     let hash = "";
     try {
-      hash = decodeURIComponent(location.hash);
+      hash = link ?? decodeURIComponent(location.hash);
     } catch {
       return;
     }
     const m = hash.match(/^#(guide|reply|triage)=([\w.|-]{1,120})$/);
     if (!m) return;
-    history.replaceState(null, "", location.pathname + location.search);
+    if (link === undefined) history.replaceState(null, "", location.pathname + location.search);
     const [, kind, id] = m;
     if (kind === "triage") return takeTriage(id);
     if (kind === "guide") {

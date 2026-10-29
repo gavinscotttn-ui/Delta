@@ -84,6 +84,10 @@ func (p *simPlatform) Run(m *Macro, restore func()) (any, error) {
 			_ = p.SetMute(true, !p.Audio().MicMuted)
 		case "set_volume":
 			_ = p.SetVolume(a.Value)
+		case "open_lite":
+			p.OpenLite(p.app.srv.URL() + "astra/popup.html")
+		case "triage_clipboard":
+			p.app.srv.Show("triage-clipboard")
 		case "restore":
 			restore()
 		}
@@ -117,6 +121,8 @@ func (p *simPlatform) Identify()                  { p.app.log.Info("[sim] identi
 func (p *simPlatform) SetRunAtStartup(bool) error { return errors.New("only supported on Windows") }
 func (p *simPlatform) Notify(title, msg string)   { p.app.log.Info("[sim] notify: %s", msg) }
 func (p *simPlatform) Prewarm(macros []Macro)     {}
+func (p *simPlatform) OpenLite(u string)          { p.app.log.Info("[sim] lite %s", u) }
+func (p *simPlatform) FocusDeck(u string)         { p.app.log.Info("[sim] focus %s", u) }
 func (p *simPlatform) OpenBar(u string)           { p.app.log.Info("[sim] bar %s", u) }
 func (p *simPlatform) SetTrayVisible(bool)        {}
 func acquireSingleInstance() bool                 { return true }

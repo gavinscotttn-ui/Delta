@@ -197,61 +197,80 @@ func findBrowser() string {
 	return ""
 }
 
-// openDeck shows the deck in a chromeless app window when Edge/Chrome is present.
+// browserWindow finds an open Praxis window (deck, bar or Lite) by its exact title.
+func browserWindow(title string) uintptr {
+	for _, w := range appWindows() {
+		if w.title == title && isBrowserExe(w.exe) {
+			return w.hwnd
+		}
+	}
+	// minimised windows are still listed; a window off the taskbar is not ours to find
+	return 0
+}
+
+// openDeck shows the Praxis window: the one already open comes forward, so there is only ever one.
 func openDeck(u string) {
+	if h := browserWindow("Praxis"); h != 0 {
+		forceForeground(h)
+		return
+	}
 	if b := findBrowser(); b != "" {
-		if shellOpen(b, `--app=`+u+` --window-size=1280,860`, SW_SHOWNORMAL) == nil {
+		if shellOpen(b, `--app=`+u+` --window-size=1360,880`, SW_SHOWNORMAL) == nil {
 			return
 		}
 	}
 	_ = shellOpen(u, "", SW_SHOWNORMAL)
 }
 
-// OpenBar shows the floating button bar, kept above other windows.
-func (p *winPlatform) OpenBar(u string) {
+// floatWindow shows a small always-on-top window (the button bar, Praxis Lite), opening it if needed.
+func (p *winPlatform) floatWindow(title, u string, w, h int) {
 	go func() {
-		defer guard(p.app.log, "bar")
-		find := func() uintptr {
-			for _, w := range appWindows() {
-				if w.title == "Praxis Bar" && isBrowserExe(w.exe) {
-					return w.hwnd
-				}
-			}
-			return 0
-		}
-		h := find()
-		if h == 0 {
+		defer guard(p.app.log, title)
+		hw := browserWindow(title)
+		if hw == 0 {
 			b := findBrowser()
 			if b == "" {
-				p.app.log.Warn("the button bar needs Microsoft Edge or Google Chrome")
+				p.app.log.Warn("%s needs Microsoft Edge or Google Chrome", title)
 				return
 			}
-			if err := shellOpen(b, `--app=`+u+` --window-size=460,132`, SW_SHOWNORMAL); err != nil {
-				p.app.log.Warn("button bar: %v", err)
+			if err := shellOpen(b, fmt.Sprintf("--app=%s --window-size=%d,%d", u, w, h), SW_SHOWNORMAL); err != nil {
+				p.app.log.Warn("%s: %v", title, err)
 				return
 			}
-			for i := 0; i < 80 && h == 0; i++ { // up to 8 s for a cold browser start
+			for i := 0; i < 80 && hw == 0; i++ { // up to 8 s for a cold browser start
 				time.Sleep(100 * time.Millisecond)
-				h = find()
+				hw = browserWindow(title)
 			}
-			if h == 0 {
+			if hw == 0 {
 				return
 			}
 			if mons, err := listMonitors(); err == nil {
 				for _, m := range mons {
 					if m.Primary {
 						var rc RECT
-						pGetWindowRect.Call(h, uintptr(unsafe.Pointer(&rc)))
-						w := rc.Right - rc.Left
-						pSetWindowPos.Call(h, 0, uintptr(m.work.Right-w-16), uintptr(m.work.Top+16), 0, 0, SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE)
+						pGetWindowRect.Call(hw, uintptr(unsafe.Pointer(&rc)))
+						pSetWindowPos.Call(hw, 0, uintptr(m.work.Right-(rc.Right-rc.Left)-16), uintptr(m.work.Top+16), 0, 0, SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE)
 					}
 				}
 			}
 		}
+		if isIconic(hw) {
+			showWindow(hw, SW_RESTORE)
+		}
 		// HWND_TOPMOST (-1): stays above other windows
-		pSetWindowPos.Call(h, ^uintptr(0), 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_SHOWWINDOW)
+		pSetWindowPos.Call(hw, ^uintptr(0), 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_SHOWWINDOW)
+		forceForeground(hw)
 	}()
 }
+
+// OpenBar shows the floating button bar.
+func (p *winPlatform) OpenBar(u string) { p.floatWindow("Praxis Bar", u, 460, 132) }
+
+// OpenLite shows Praxis Lite: one search box over replies, templates, guides and numbers.
+func (p *winPlatform) OpenLite(u string) { p.floatWindow("Praxis Lite", u, 440, 640) }
+
+// FocusDeck brings the Praxis window forward (opening it if closed).
+func (p *winPlatform) FocusDeck(u string) { go openDeck(u) }
 
 func showError(msg string) { messageBox("Praxis", msg, MB_OK|MB_ICONERROR|MB_TOPMOST) }
 
@@ -264,6 +283,7 @@ const (
 	cmdIdentify
 	cmdQuit
 	cmdBar
+	cmdLite
 	cmdMacroBase = 100
 )
 
@@ -455,6 +475,7 @@ func (p *winPlatform) showMenu() {
 	}
 	add(MF_STRING, cmdOpen, "Open Praxis")
 	add(MF_STRING, cmdBar, "Button bar")
+	add(MF_STRING, cmdLite, "Praxis Lite")
 	add(MF_SEPARATOR, 0, "")
 	n := 0
 	for i, mac := range cfg.Macros {
@@ -503,6 +524,8 @@ func (p *winPlatform) showMenu() {
 		p.Identify()
 	case c == cmdBar:
 		p.OpenBar(p.app.srv.URL() + "bar")
+	case c == cmdLite:
+		p.OpenLite(p.app.srv.URL() + "astra/popup.html")
 	case c == cmdQuit:
 		pPostQuitMessage.Call(0)
 	case c >= cmdMacroBase && c-cmdMacroBase < len(cfg.Macros):

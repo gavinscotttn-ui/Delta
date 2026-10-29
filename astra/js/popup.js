@@ -185,6 +185,7 @@
   /* Opens a tab. The popup then closes, as the browser's own menus do; the side panel stays. */
   function openTab(url) {
     if (!url) return;
+    if (window.PraxisLite) return window.PraxisLite.open(url);
     const done = () => inPanel || window.close();
     if (inExtension) chrome.tabs.create({ url }).then(done, done);
     else window.open(url, "_blank", "noopener,noreferrer");
@@ -385,7 +386,7 @@
               )}</span><span class="lite-main"><b>${esc(r.title)}</b><small>${esc(r.sub)}</small></span><span class="lite-go">${esc(r.go)}</span></div>`,
           )
           .join("")}</div>`
-      : `<div class="lite-empty"><p>Nothing matches. Try fewer words.</p><button class="secondary-btn" type="button" data-astra>Search the documents in Astra</button></div>`;
+      : `<div class="lite-empty"><p>Nothing matches. Try fewer words.</p><button class="secondary-btn" type="button" data-astra>Search the documents in Praxis</button></div>`;
     count.textContent = rows.length ? `${rows.length} result${rows.length === 1 ? "" : "s"}` : "No match";
     setCombo(rows.length > 0);
   }
@@ -423,10 +424,10 @@
       )
       .join(
         "",
-      )}<button class="lite-row" type="button" data-triage><span class="lite-main"><b>Triage it in Astra</b><small>${
+      )}<button class="lite-row" type="button" data-triage><span class="lite-main"><b>Triage it in Praxis</b><small>${
       replies.length
         ? "Details, guide, ticket note and reply"
-        : "No reply matched here: Astra reads it in full"
+        : "No reply matched here: Praxis reads it in full"
     }</small></span><span class="lite-go">Open</span></button></div></section>`;
   }
 
@@ -436,7 +437,7 @@
     try {
       await chrome.storage.session.set({ ["astra.triage." + id]: { text: picked, at: Date.now() } });
     } catch {
-      return toast("Astra could not be opened");
+      return toast("Praxis could not be opened");
     }
     openTab(astraUrl("#triage=" + id));
   }
@@ -512,7 +513,7 @@
           length === "email"
             ? '<button class="secondary-btn" type="button" id="liteCopySubject">Copy subject</button>'
             : ""
-        }<button class="link-btn quiet" type="button" id="liteFull">Open in Astra</button></div></section>`;
+        }<button class="link-btn quiet" type="button" id="liteFull">Open in Praxis</button></div></section>`;
       for (const el of view.querySelectorAll("[data-v]")) {
         const key = el.dataset.v;
         if (el.type === "date") el.value = raw[key] || "";

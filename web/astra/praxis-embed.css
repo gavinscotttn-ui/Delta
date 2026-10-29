@@ -37,3 +37,9 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+/* Praxis Lite is its own window: the page fills it, however it is sized. */
+.praxis-lite body.lite {
+  width: auto;
+  max-height: none;
+}

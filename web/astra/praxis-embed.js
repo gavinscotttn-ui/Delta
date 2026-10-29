@@ -3,6 +3,7 @@
    2. Saves every change Astra makes to its storage into Praxis's folder (%APPDATA%\Praxis), so the
       workspace survives the browser's data being cleared and is the same in every Praxis window.
    3. Inside the Praxis window, hands the surrounding window (sidebar, search, privacy screen) to Praxis.
+   4. In Praxis Lite, sends links on to the Praxis window.
    Nothing here talks to anything but this computer's own Praxis. */
 (function () {
   "use strict";
@@ -74,5 +75,33 @@
   if (parentHost) {
     window.PraxisHost = parentHost;
     document.documentElement.classList.add("in-praxis");
+  }
+
+  /* Praxis Lite (its own small window): a guide, a reply or "Open Praxis" comes up in the Praxis window, and
+     Lite closes, as the toolbar popup did. Websites open in the browser. */
+  if (location.pathname.endsWith("/popup.html")) {
+    document.documentElement.classList.add("praxis-lite");
+    window.PraxisLite = {
+      open(url) {
+        let target = "";
+        try {
+          const u = new URL(url, location.href);
+          if (u.origin !== location.origin) {
+            if (u.protocol === "http:" || u.protocol === "https:") window.open(u.href, "_blank", "noopener,noreferrer");
+            return;
+          }
+          target = decodeURIComponent(u.hash.slice(1));
+        } catch {
+          return;
+        }
+        fetch("/api/show", {
+          method: "POST",
+          headers: { "X-Praxis-Token": TOKEN, "Content-Type": "application/json" },
+          body: JSON.stringify({ target: /^(guide|reply)=[\w.|-]{1,120}$/.test(target) ? target : "" }),
+        })
+          .then((r) => r.ok && window.close())
+          .catch(() => {});
+      },
+    };
   }
 })();

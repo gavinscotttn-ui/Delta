@@ -443,7 +443,7 @@ const P = {
   tool:'M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z', search:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4', pin:'M9 3h6l-1 6 4 4H6l4-4zM12 13v8',
   note:'M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7',
 };
-const TILE_ICONS = ['monitor','eye-off','volume-off','volume','mic-off','play','lock','briefcase','moon','keyboard','globe','mail','phone','chart','return','star','bolt'];
+const TILE_ICONS = ['monitor','eye-off','volume-off','volume','mic-off','play','lock','briefcase','moon','keyboard','globe','mail','phone','chart','return','star','bolt','search','inbox'];
 function icon(name){
   const ns = 'http://www.w3.org/2000/svg', s = document.createElementNS(ns,'svg');
   s.setAttribute('viewBox','0 0 24 24'); s.setAttribute('class','i'); s.setAttribute('aria-hidden','true');
@@ -490,6 +490,8 @@ const ACTIONS = {
   close_app:['Windows','Close an app',['match']],
   launch:['Open','Open an app or file',['app','args','win']],
   open_url:['Open','Open a website',['url']],
+  open_lite:['Open','Praxis Lite'],
+  triage_clipboard:['Open','Triage what\'s copied'],
   run_command:['Open','Run a command',['cmd']],
   send_keys:['Keyboard','Press keys',['keys']],
   type_text:['Keyboard','Type text',['text']],
@@ -517,9 +519,11 @@ async function refresh(){
 async function poll(){
   if (!S) return;
   try{
-    Object.assign(S, await api('GET','/api/status'));
+    const st = await api('GET','/api/status?show=1'), show = st.show; delete st.show;
+    Object.assign(S, st);
     $('#banner').replaceChildren();
     renderStatus();
+    takeShow(show);
   }catch(e){ showDown(e); }
 }
 function showDown(e){ $('#banner').replaceChildren(h('p',{class:'err',style:{margin:'16px 2px'}}, e.message)); }
@@ -1036,7 +1040,26 @@ window.PraxisHost = {
   ask: (msg, sub, ok, danger) => ask(msg, sub, ok, danger),
   palette: () => openPal(),
   altPage: d => go(ALT[d]),
+  keyFor: type => { const m = cfg && cfg.macros.find(x=>x.hotkey && x.actions.some(a=>a.type===type && !a.disabled)); return m ? m.hotkey : ''; },
 };
+
+// ---------- sent by Praxis Lite and the triage key ----------
+let showWant = '';
+function takeShow(t){
+  if (t) showWant = t;
+  const A = work();
+  if (!showWant || !A) return; // kept until the workspace has loaded
+  const want = showWant; showWant = '';
+  if ($('#pal').open) $('#pal').close();
+  if (want !== 'triage-clipboard'){ A.openLink(want); return; }
+  const failed = ()=>{ go('Triage'); toast('Paste the email here: the clipboard could not be read', true); };
+  if (!navigator.clipboard || !navigator.clipboard.readText) return failed();
+  navigator.clipboard.readText().then(text=>{
+    text = String(text||'').trim();
+    go('Triage');
+    if (text) A.triage(text); else toast('Nothing is copied');
+  }, ()=>{ if (document.hasFocus()) failed(); else showWant = want; }); // the clipboard is read once this window has focus
+}
 // a workspace window open: the sidebar dims with it, and a click there closes it
 $('aside').addEventListener('click', e=>{
   if (!$('aside').classList.contains('dim')) return;
@@ -1047,6 +1070,8 @@ frame.addEventListener('load', ()=>{
   const A = work(); if (!A) return;
   if (!$('#v-astra').hidden && A.page() !== workWant) A.go(workWant);
   moveTemplates();
+  takeShow();
+  try{ frame.contentWindow.addEventListener('focus', ()=>{ poll(); }); }catch{}
 });
 
 /* Templates made in Praxis before the merge move into the workspace's Templates, once. */
@@ -1166,6 +1191,7 @@ function palSource(q){
     {ty:'Do', b:'Return', s:'Undo switches', act:()=>api('POST','/api/restore').then(()=>setTimeout(poll,250))},
     {ty:'Do', b:'New note', act:()=>notes.add()},
     {ty:'Do', b:'Open the button bar', act:()=>api('POST','/api/bar')},
+    ...(cfg.macros.some(m=>m.actions.some(a=>a.type==='open_lite')) ? [] : [{ty:'Do', b:'Praxis Lite', s:'Quick search on top of any app', act:()=>api('POST','/api/lite')}]),
     {ty:'Do', b:'Privacy screen', act:lock},
     {ty:'Do', b:'Keyboard shortcuts', act:()=>{ const A = work(); if (A){ showWork(A.page()); A.run('keys',''); } }},
     {ty:'Do', b:'Settings', act:()=>openSettings()},
@@ -1199,9 +1225,10 @@ $('#pal').addEventListener('click', e=>{ if (e.target === $('#pal')) $('#pal').c
 let startView = 'Home'; try{ startView = localStorage.getItem('praxis.view') || 'Home'; }catch{}
 go(startView);
 frame.src = '/astra/';
-refresh().then(()=>work()?.refreshButtons?.());
+refresh().then(()=>{ work()?.refreshButtons?.(); poll(); });
 setInterval(()=>{ if (!document.hidden) poll(); }, 2500);
 document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) poll(); });
+addEventListener('focus', ()=>{ poll(); });
 </script>
 </body>
 </html>

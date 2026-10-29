@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -42,6 +43,9 @@ type Server struct {
 
 	items map[string]*ItemStore // "notes", "templates"
 	kv    *KVStore              // Astra's workspace
+
+	showMu  sync.Mutex
+	pending string // for the main window: "guide=<id>", "reply=<id>" or "triage-clipboard"
 
 	audioMu  sync.Mutex
 	audioAt  time.Time
@@ -127,12 +131,16 @@ func (s *Server) Handler() http.Handler {
 	api.HandleFunc("GET /api/state", s.handleState)
 	api.HandleFunc("GET /api/status", func(w http.ResponseWriter, r *http.Request) {
 		// polled while the window is open: no config, no log, cached audio
-		writeJSON(w, 200, map[string]any{
+		st := map[string]any{
 			"hotkeys": s.eng.HotkeyStatus(),
 			"paused":  s.eng.Paused(),
 			"active":  s.eng.ActiveMacros(),
 			"audio":   s.audio(false),
-		})
+		}
+		if r.URL.Query().Get("show") == "1" { // the main window only; the button bar polls too
+			st["show"] = s.takeShow()
+		}
+		writeJSON(w, 200, st)
 	})
 	for _, kind := range []string{"notes", "templates"} {
 		store := s.items[kind]
@@ -165,6 +173,21 @@ func (s *Server) Handler() http.Handler {
 		writeJSON(w, 200, map[string]bool{"ok": true})
 	})
 	s.kvRoutes(api)
+	api.HandleFunc("POST /api/show", func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			Target string `json:"target"`
+		}
+		if err := readJSON(r, &body); err != nil || !validShow(body.Target) {
+			writeErr(w, 400, "bad request")
+			return
+		}
+		s.Show(body.Target)
+		writeJSON(w, 200, map[string]bool{"ok": true})
+	})
+	api.HandleFunc("POST /api/lite", func(w http.ResponseWriter, r *http.Request) {
+		s.plat.OpenLite(s.URL() + "astra/popup.html")
+		writeJSON(w, 200, map[string]bool{"ok": true})
+	})
 	api.HandleFunc("GET /api/log", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, s.log.Entries())
 	})
@@ -349,6 +372,27 @@ func (s *Server) handleAudio(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, s.audio(true))
+}
+
+var showTarget = regexp.MustCompile(`^((guide|reply)=[\w.|-]{1,120}|triage-clipboard)?$`)
+
+func validShow(t string) bool { return showTarget.MatchString(t) }
+
+// Show brings the main window forward and leaves it one instruction: open a guide or reply,
+// or triage what is on the clipboard. The window picks it up as soon as it has focus.
+func (s *Server) Show(target string) {
+	s.showMu.Lock()
+	s.pending = target
+	s.showMu.Unlock()
+	s.plat.FocusDeck(s.URL())
+}
+
+func (s *Server) takeShow() string {
+	s.showMu.Lock()
+	defer s.showMu.Unlock()
+	t := s.pending
+	s.pending = ""
+	return t
 }
 
 // audio returns the speaker/mic state, reusing a reading younger than a second

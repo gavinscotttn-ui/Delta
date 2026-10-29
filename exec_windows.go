@@ -214,6 +214,10 @@ func (p *winPlatform) runAction(a *Action, f *winFrame, used map[uintptr]bool, r
 		go func() { _ = cmd.Wait() }()
 	case "notify":
 		p.Notify("Praxis", a.Text)
+	case "open_lite":
+		p.OpenLite(p.app.srv.URL() + "astra/popup.html")
+	case "triage_clipboard":
+		p.app.srv.Show("triage-clipboard")
 	case "restore":
 		restore()
 	default:

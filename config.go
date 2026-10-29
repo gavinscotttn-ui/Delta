@@ -14,7 +14,7 @@ import (
 	"unicode/utf8"
 )
 
-const configVersion = 1
+const configVersion = 2
 
 // Config is everything Praxis persists to disk.
 type Config struct {
@@ -70,6 +70,7 @@ var actionTypes = map[string]bool{
 	"fill_screens": true, "launch": true, "open_url": true, "focus_app": true, "close_app": true,
 	"send_keys": true, "type_text": true, "wait": true, "lock": true, "monitors_off": true,
 	"clear_clipboard": true, "run_command": true, "notify": true, "restore": true,
+	"open_lite": true, "triage_clipboard": true,
 }
 
 const (
@@ -121,8 +122,50 @@ func defaultConfig() Config {
 				ID: "lock", Name: "Lock", Icon: "lock", Color: "#8E8E93", Hotkey: "Ctrl+Alt+L",
 				Actions: []Action{{Type: "mute"}, {Type: "mic_mute"}, {Type: "lock"}},
 			},
+			workspaceMacros[0],
+			workspaceMacros[1],
 		},
 	}
+}
+
+// workspaceMacros open the workspace from any app. Added to older configs once (version 2).
+var workspaceMacros = []Macro{
+	{
+		ID: "lite", Name: "Praxis Lite", Icon: "search", Color: "#5AC8FA", Hotkey: "Ctrl+Alt+Space",
+		Actions: []Action{{Type: "open_lite"}},
+	},
+	{
+		ID: "triage", Name: "Triage what's copied", Icon: "inbox", Color: "#34C759", Hotkey: "Ctrl+Alt+T",
+		Actions: []Action{{Type: "triage_clipboard"}},
+	},
+}
+
+// migrate brings a config saved by an older Praxis up to date. It reports whether anything changed.
+func (c *Config) migrate() bool {
+	if c.Version >= configVersion {
+		return false
+	}
+	if c.Version < 2 {
+		ids, keys := map[string]bool{}, map[string]bool{}
+		for _, m := range c.Macros {
+			ids[m.ID] = true
+			if hk, err := ParseHotkey(m.Hotkey); err == nil {
+				keys[hk.String()] = true
+			}
+		}
+		for _, m := range workspaceMacros {
+			if ids[m.ID] || len(c.Macros) >= maxMacros {
+				continue
+			}
+			m.Actions = append([]Action(nil), m.Actions...)
+			if keys[m.Hotkey] {
+				m.Hotkey = "" // the key is already someone else's: the button still works
+			}
+			c.Macros = append(c.Macros, m)
+		}
+	}
+	c.Version = configVersion
+	return true
 }
 
 // iconNames are the line icons the deck can draw. Anything else (e.g. emoji
@@ -130,7 +173,7 @@ func defaultConfig() Config {
 var iconNames = map[string]bool{
 	"bolt": true, "eye-off": true, "volume-off": true, "volume": true, "mic-off": true, "play": true,
 	"lock": true, "briefcase": true, "moon": true, "monitor": true, "keyboard": true, "globe": true,
-	"mail": true, "phone": true, "chart": true, "return": true, "star": true,
+	"mail": true, "phone": true, "chart": true, "return": true, "star": true, "search": true, "inbox": true,
 }
 
 func randomID() string {
@@ -141,9 +184,7 @@ func randomID() string {
 
 // Normalize fills defaults and validates. It returns a descriptive error for the UI.
 func (c *Config) Normalize() error {
-	if c.Version == 0 {
-		c.Version = configVersion
-	}
+	c.Version = configVersion // older files are brought up to date by migrate, before this
 	s := &c.Settings
 	s.Name = strings.TrimSpace(s.Name)
 	if err := checkLen("name", s.Name, 80); err != nil {
@@ -417,6 +458,7 @@ func LoadConfigStore(dir string) (*ConfigStore, error) {
 		_ = s.cfg.Normalize()
 		return s, fmt.Errorf("config was unreadable (saved as config.json.broken), defaults loaded: %w", err)
 	}
+	migrated := c.migrate()
 	if err := c.Normalize(); err != nil {
 		_ = os.WriteFile(s.path+".invalid", data, 0o600)
 		s.cfg = defaultConfig()
@@ -424,6 +466,9 @@ func LoadConfigStore(dir string) (*ConfigStore, error) {
 		return s, fmt.Errorf("config was invalid (saved as config.json.invalid), defaults loaded: %w", err)
 	}
 	s.cfg = c
+	if migrated {
+		return s, s.saveLocked()
+	}
 	return s, nil
 }
 

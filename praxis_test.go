@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -42,6 +45,52 @@ func TestDefaultConfigValid(t *testing.T) {
 	c := defaultConfig()
 	if err := c.Normalize(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// A config from before the workspace gains the Lite and triage buttons once; a key already in use is left to its owner.
+func TestConfigMigration(t *testing.T) {
+	dir := t.TempDir()
+	old := `{"version":1,"settings":{"port":47800},"macros":[{"id":"mine","name":"Mine","hotkey":"Ctrl+Alt+T","actions":[{"type":"mute"}]}]}`
+	if err := os.WriteFile(filepath.Join(dir, "config.json"), []byte(old), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	store, err := LoadConfigStore(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := store.Get()
+	if c.Version != configVersion || len(c.Macros) != 3 {
+		t.Fatalf("version %d, %d macros", c.Version, len(c.Macros))
+	}
+	if c.Macros[1].ID != "lite" || c.Macros[1].Hotkey != "Ctrl+Alt+Space" {
+		t.Errorf("lite: %+v", c.Macros[1])
+	}
+	if c.Macros[2].ID != "triage" || c.Macros[2].Hotkey != "" {
+		t.Errorf("triage should lose the taken key: %+v", c.Macros[2])
+	}
+	// saved, so a second start changes nothing (the user may since have deleted the buttons)
+	b, _ := os.ReadFile(filepath.Join(dir, "config.json"))
+	var onDisk Config
+	if json.Unmarshal(b, &onDisk) != nil || onDisk.Version != configVersion || len(onDisk.Macros) != 3 {
+		t.Errorf("not saved: %s", b)
+	}
+	onDisk.Macros = onDisk.Macros[:1]
+	if onDisk.migrate() {
+		t.Error("migrated twice")
+	}
+}
+
+func TestShowTargets(t *testing.T) {
+	for _, ok := range []string{"", "guide=kb-1", "reply=late-order|first", "triage-clipboard"} {
+		if !validShow(ok) {
+			t.Errorf("rejected %q", ok)
+		}
+	}
+	for _, bad := range []string{"guide=", "guide=<x>", "triage=abc", "reply=a b", "javascript:x", "guide=" + strings.Repeat("a", 121)} {
+		if validShow(bad) {
+			t.Errorf("accepted %q", bad)
+		}
 	}
 }
 
@@ -132,6 +181,29 @@ func TestAPIGuards(t *testing.T) {
 	}
 	if c := do("POST", "/api/run/does-not-exist", "127.0.0.1", srv.token, ""); c != 404 {
 		t.Errorf("unknown macro: %d", c)
+	}
+	// an instruction for the main window is kept until the main window asks for it
+	srv.Show("guide=kb-1")
+	get := func(path string) map[string]any {
+		req, _ := http.NewRequest("GET", ts.URL+path, nil)
+		req.Header.Set("X-Praxis-Token", srv.token)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		var m map[string]any
+		_ = json.NewDecoder(resp.Body).Decode(&m)
+		return m
+	}
+	if _, has := get("/api/status")["show"]; has {
+		t.Error("the button bar's poll took the instruction")
+	}
+	if got := get("/api/status?show=1")["show"]; got != "guide=kb-1" {
+		t.Errorf("main window got %v", got)
+	}
+	if got := get("/api/status?show=1")["show"]; got != "" {
+		t.Errorf("instruction given twice: %v", got)
 	}
 	// another web page cannot drive the deck, even with the token
 	req, _ := http.NewRequest("POST", ts.URL+"/api/restore", nil)

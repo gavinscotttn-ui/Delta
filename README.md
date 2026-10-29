@@ -2,7 +2,8 @@
 
 # Praxis
 
-Discreet hotkeys and shortcuts for Windows, with a clean, minimal control window.
+Discreet hotkeys and shortcuts for Windows, and a service-desk workspace (formerly Astra), in one clean window.
+Everything works offline.
 
 **Switch** is the headline: press **Pause** and Praxis mutes the sound, pauses media, minimises what you were
 looking at, and puts your chosen work app on your chosen screens. Press **Pause** again (or **Shift+Pause**,
@@ -14,14 +15,20 @@ looking at, and puts your chosen work app on your chosen screens. Press **Pause*
 2. Double-click it. No installer and no admin rights needed. Praxis sits in the tray and opens the deck.
 3. Windows SmartScreen may warn because the exe is unsigned. Click **More info → Run anyway**.
 
-Settings and macros live in `%APPDATA%\Praxis\config.json`; the activity log is `%APPDATA%\Praxis\praxis.log`.
+The exe is about 170 MB because the document library is inside it. Settings and macros live in
+`%APPDATA%\Praxis\config.json`, the workspace in `kv.json` next to it, and the activity log (when kept) in
+`praxis.log`.
 
 ## Features
 
-- **Home:** clock and date, every button one click away, pinned templates, recent notes. `Ctrl K` searches
-  buttons, notes and templates; `Alt 1` to `Alt 5` open each page.
-- **Notes** and **Templates:** search, autosave, copy in one click, open a template in your mail app. Templates fill
-  `{date}`, `{day}`, `{time}`, `{name}` and `{first}` when copied. Pin templates to Home.
+- **Workspace:** Home, Triage, Replies, Templates, Notes, Ask, Knowledge, Library, Workflows and Toolkit in the same
+  window. `Ctrl K` searches everything; `Alt 1` to `Alt 0` open the pages. Your buttons are on Home too.
+- **Praxis Lite** (`Ctrl+Alt+Space`): a small window on top of any app that finds replies, templates, guides,
+  systems and UK numbers. A guide or reply opens in Praxis.
+- **Triage what's copied** (`Ctrl+Alt+T`): copy a customer's email anywhere and press the key. Praxis opens it in
+  Triage with the details, ticket note and reply. The first time, the browser asks to let Praxis read the clipboard.
+- **Privacy screen:** one click covers the window; your work stays where it was.
+- The AI assistant from Astra is not included, as it needed a download. Ask answers from the guides and documents.
 - **Button bar:** your buttons in a small window that stays on top, and steps aside during a switch.
 - **Appearance:** match the computer, light, dark or high contrast, and a larger text size.
 - **Switch:** set up in one card. Each screen can show its own app or a website (opened in its own browser
@@ -60,7 +67,7 @@ Settings and macros live in `%APPDATA%\Praxis\config.json`; the activity log is 
 
 ## Tips and limits
 
-- No Pause key on your laptop? Rebind Switch to anything (for example `Ctrl+Alt+Space` or `F13`-`F24` on a macro pad).
+- No Pause key on your laptop? Rebind Switch to anything (for example `Ctrl+Alt+P` or `F13`-`F24` on a macro pad).
 - Windows will not let a normal app control windows of apps running **as administrator**. Run Praxis elevated
   if you need that.
 - Single-window apps (Spotify, for example) cannot fill more than one screen. Praxis fills what it can and logs the rest.

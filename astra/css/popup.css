@@ -51,14 +51,20 @@ body.lite.panel {
 }
 
 .lite-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
-  line-height: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
 }
 
 .lite-logo {
   display: block;
-  width: auto;
-  height: 17px;
+  width: 20px;
+  height: 20px;
 }
 
 .lite-search {

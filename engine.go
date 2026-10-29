@@ -51,7 +51,9 @@ type Platform interface {
 	Notify(title, msg string)
 	Prewarm(macros []Macro)
 	SetTrayVisible(visible bool)
-	OpenBar(url string) // small always-on-top window of shortcut buttons
+	OpenBar(url string)   // small always-on-top window of shortcut buttons
+	OpenLite(url string)  // Praxis Lite: quick search over the workspace, always on top
+	FocusDeck(url string) // bring the Praxis window forward
 }
 
 // ---- activity log ----
