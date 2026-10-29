@@ -81,7 +81,7 @@ func (p *winPlatform) Run(m *Macro, restore func()) (any, error) {
 	if m.Undoable {
 		// Discretion: the Praxis window itself never stays on screen during a switch.
 		for _, w := range f.windows() {
-			if (w.title == "Praxis" || w.title == "Praxis Bar") && isBrowserExe(w.exe) {
+			if (w.title == "Praxis" || w.title == "Praxis Bar" || w.title == "Praxis Lite") && isBrowserExe(w.exe) {
 				f.stash(w.hwnd, false)
 			}
 		}
