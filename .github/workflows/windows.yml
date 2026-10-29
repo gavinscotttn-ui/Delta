@@ -20,7 +20,7 @@ jobs:
           go test ./...
       - name: Build Praxis.exe
         # symbols kept on purpose: stripped Go binaries look "packed" to antivirus heuristics
-        run: go build -trimpath -ldflags "-H windowsgui" -o Praxis.exe .
+        run: go build -trimpath -ldflags "-H windowsgui -X main.version=1.0.${{ github.run_number }}" -o Praxis.exe .
       - name: Windows integration self-test
         shell: pwsh
         run: |
@@ -41,6 +41,12 @@ jobs:
           $h = @{ 'X-Praxis-Token' = $tok }
           $st = Invoke-RestMethod "${url}api/state" -Headers $h
           Write-Host "hotkeys:" ($st.hotkeys | ConvertTo-Json -Compress) "audio:" ($st.audio | ConvertTo-Json -Compress)
+          if ($st.version -ne "1.0.${{ github.run_number }}") { Write-Host "version not stamped: $($st.version)"; exit 1 }
+          $note = Invoke-RestMethod -Method Put "${url}api/notes" -Headers $h -ContentType 'application/json' -Body '{"title":"ci","body":"hello"}'
+          $notes = @(Invoke-RestMethod "${url}api/notes" -Headers $h)
+          if ($notes.Count -ne 1 -or $notes[0].id -ne $note.id) { Write-Host 'notes did not round-trip'; exit 1 }
+          if (-not (Test-Path (Join-Path $env:PRAXIS_HOME 'notes.json'))) { Write-Host 'notes.json not written'; exit 1 }
+          if ((Invoke-WebRequest "${url}bar" -UseBasicParsing).StatusCode -ne 200) { Write-Host 'bar page missing'; exit 1 }
           Invoke-RestMethod -Method Post "${url}api/run/switch" -Headers $h | Out-Null
           Start-Sleep -Seconds 4
           $st = Invoke-RestMethod "${url}api/state" -Headers $h

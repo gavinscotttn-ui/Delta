@@ -30,7 +30,8 @@ var logoPNG []byte
 //go:embed assets/icon.png
 var iconPNG []byte
 
-const version = "1.0.0"
+// version is stamped by the release build (-X main.version=...).
+var version = "dev"
 
 type Server struct {
 	eng   *Engine

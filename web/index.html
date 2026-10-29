@@ -97,6 +97,13 @@ main{min-width:0;padding:28px 32px 90px}
 .btn.plain{background:transparent;color:var(--muted);border-color:transparent}
 .btn.plain:hover{background:var(--btn-hover);color:var(--ink)}
 .btn.danger{background:var(--danger-bg);color:var(--danger)}
+.btn.danger-solid{background:var(--danger);color:#fff}
+.btn.danger-solid:hover{filter:brightness(.92)}
+dialog.ask{width:min(400px,calc(100vw - 24px));text-align:center;background:var(--panel)}
+.ask-body{padding:24px 24px 18px}
+.ask-body p:first-child{font-size:15px;font-weight:600;line-height:1.4}
+.ask-body .hint{margin-top:6px}
+.ask-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 16px}
 
 /* cards and rows */
 .card{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r)}
@@ -344,6 +351,11 @@ dialog[open]{animation:in .16s ease-out}
   <div id="palList" role="listbox"></div>
 </dialog>
 
+<dialog id="ask" class="ask" aria-labelledby="askMsg">
+  <div class="ask-body"><p id="askMsg"></p><p id="askSub" class="hint"></p></div>
+  <div class="ask-actions"><button class="btn" id="askNo">Cancel</button><button class="btn solid" id="askOk">OK</button></div>
+</dialog>
+
 <dialog id="ed" aria-labelledby="edT">
   <div class="sh"><h3 id="edT">Button</h3><button class="btn plain" id="edCancel">Cancel</button><button class="btn solid" id="edSave">Save</button></div>
   <div class="sb" id="edBody"></div>
@@ -422,6 +434,17 @@ async function api(method, path, body){
   return d;
 }
 let toastT;
+// ask(): the app's own confirmation, so nothing ever says "127.0.0.1 says".
+function ask(msg, sub, ok, danger){
+  return new Promise(res=>{
+    const d = $('#ask'), okB = $('#askOk');
+    $('#askMsg').textContent = msg; $('#askSub').textContent = sub||''; $('#askSub').hidden = !sub;
+    okB.textContent = ok||'OK'; okB.className = 'btn '+(danger ? 'danger-solid' : 'solid');
+    const done = v=>{ d.onclose = null; if (d.open) d.close(); res(v); };
+    okB.onclick = ()=>done(true); $('#askNo').onclick = ()=>done(false); d.onclose = ()=>done(false);
+    d.showModal(); (danger ? $('#askNo') : okB).focus();
+  });
+}
 function toast(msg, bad){
   document.querySelectorAll('.toast').forEach(t=>t.remove());
   const t = h('div',{class:'toast'+(bad?' bad':''), role:'status'}, msg); document.body.append(t);
@@ -723,10 +746,10 @@ document.addEventListener('keydown', e=>{
   const v = [e.ctrlKey&&'Ctrl', e.altKey&&'Alt', e.shiftKey&&'Shift', e.metaKey&&'Win', k].filter(Boolean).join('+');
   if (rec.global && plain && TYPING_KEYS.test(k)) {
     const r = rec; stopRec();
-    if (!confirm(k+' on its own will stop doing its normal job in every app while Praxis is running'+
-      (k==='Home'||k==='End' ? ' (for example, jumping to the start or end of a line)' : '')+
-      '.\n\nYou can pause keys any time in Settings. Use '+k+' anyway?')) return;
-    r.val = v; r.chip.textContent = v; r.chip.classList.remove('empty'); r.cb(v); return;
+    ask('Use '+k+' on its own?', k+' will stop doing its usual job in other apps'+
+      (k==='Home'||k==='End' ? ' (jumping to the start or end of a line)' : '')+' while Praxis is running. You can pause keys in Settings.', 'Use '+k)
+      .then(ok=>{ if (ok){ r.val = v; r.chip.textContent = v; r.chip.classList.remove('empty'); r.cb(v); } });
+    return;
   }
   const r = rec; r.val = v; r.chip.textContent = v; r.chip.classList.remove('empty'); r.cb(v); stopRec();
 }, true);
@@ -792,8 +815,8 @@ function drawEditor(){
     h('p',{class:'err',id:'edErr',role:'alert'}),
     ed.index!=null ? h('div',{class:'card',style:{marginTop:'16px'}},
       h('button',{class:'row btnrow',type:'button', onclick:()=>{ const c=structuredClone(m); c.id=''; c.name+=' copy'; c.hotkey=''; $('#ed').close(); setTimeout(()=>openEditor(null,c),0); }}, 'Duplicate'),
-      h('button',{class:'row btnrow',type:'button',style:{color:'var(--bad)'}, onclick:async()=>{
-        if (!confirm('Delete '+(m.name||'this shortcut')+'?')) return;
+      h('button',{class:'row btnrow',type:'button',style:{color:'var(--danger)'}, onclick:async()=>{
+        if (!await ask('Delete '+(m.name||'this button')+'?', 'This can\u2019t be undone.', 'Delete', true)) return;
         const next = structuredClone(cfg); next.macros.splice(ed.index,1);
         try{ await saveConfig(next); $('#ed').close(); }catch(e){ $('#edErr').textContent=e.message; } }}, 'Delete button')) : null);
   drawSteps(steps);
@@ -900,24 +923,24 @@ function drawSettings(){
         check('Use from phone', r.enabled, v=>setSetting(x=>x.remote.enabled=v), 'Same Wi-Fi only. Five wrong PINs locks out for five minutes. Not encrypted.'),
         h('div',{class:'row'}, h('span',{class:'k'},'Address'), h('span',{class:'v',style:{userSelect:'all'}}, addr))),
     h('div',{class:'sec'}, h('h2',{},'Buttons')),
-    grp(arow('Export', '', exportCfg), arow('Import', '', ()=>imp.click()), arow('Reset to originals', 'var(--bad)', resetCfg)),
+    grp(arow('Export', '', exportCfg), arow('Import', '', ()=>imp.click()), arow('Reset to originals', 'var(--danger)', resetCfg)),
     h('div',{class:'sec'}, h('h2',{},'Activity')),
-    grp(h('div',{class:'log'}, ...(S.log||[]).slice(-60).reverse().map(e=>h('div',{class:e.level}, new Date(e.time).toLocaleTimeString()+'  '+e.msg)))),
+    grp(h('div',{class:'log'}, ...(S.log||[]).slice(-60).reverse().map(e=>h('div',{class:e.level}, new Date(e.time).toLocaleTimeString('en-GB')+'  '+e.msg)))),
     h('p',{class:'note'},'Praxis '+S.version));
 }
 const imp = h('input',{type:'file',accept:'.json,application/json',hidden:true,onchange:async e=>{
   const f = e.target.files[0]; e.target.value=''; if (!f) return;
-  try{ const d = JSON.parse(await f.text()); if (!Array.isArray(d.macros)) throw new Error('No shortcuts in that file.');
-    if (!confirm('Replace your shortcuts with '+d.macros.length+' imported ones?')) return;
+  try{ const d = JSON.parse(await f.text()); if (!Array.isArray(d.macros)) throw new Error('No buttons in that file.');
+    if (!await ask('Replace your buttons?', 'Your '+S.config.macros.length+' buttons will be replaced by '+d.macros.length+' from the file.', 'Replace', true)) return;
     const next = structuredClone(S.config); next.macros = d.macros; await saveConfig(next); drawSettings(); toast('Imported');
   }catch(err){ toast('Import failed: '+err.message, true); } }});
 document.body.append(imp);
 function exportCfg(){
-  const a = h('a',{href:URL.createObjectURL(new Blob([JSON.stringify({praxis:1,macros:S.config.macros},null,2)],{type:'application/json'})),download:'praxis-shortcuts.json'});
+  const a = h('a',{href:URL.createObjectURL(new Blob([JSON.stringify({praxis:1,macros:S.config.macros},null,2)],{type:'application/json'})),download:'praxis-buttons.json'});
   document.body.append(a); a.click(); a.remove();
 }
 async function resetCfg(){
-  if (!confirm('Replace all shortcuts with the originals? Settings are kept.')) return;
+  if (!await ask('Reset buttons?', 'All buttons go back to the originals. Settings, notes and templates are kept.', 'Reset', true)) return;
   try{ await api('POST','/api/defaults'); await refresh(); drawSettings(); toast('Reset'); }catch(e){ toast(e.message,true); }
 }
 
@@ -966,7 +989,7 @@ async function copy(text, what){
 function pane(kind, el, opts){
   let items = null, cur = null, q = '', t = null, dirty = false, loading = null;
   const when = ms => { const d = new Date(ms), now = new Date();
-    return d.toDateString()===now.toDateString() ? d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString([], {day:'numeric',month:'short'}); };
+    return d.toDateString()===now.toDateString() ? d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString('en-GB', {day:'numeric',month:'short'}); };
   const firstLine = s => (s||'').split('\n').find(l=>l.trim()) || '';
   const label = it => it.title.trim() || firstLine(it.body) || opts.untitled;
 
@@ -995,7 +1018,7 @@ function pane(kind, el, opts){
     catch(e){ toast(e.message,true); }
   }
   async function del(){
-    const it = items.find(x=>x.id===cur); if (!it || !confirm('Delete '+label(it)+'?')) return;
+    const it = items.find(x=>x.id===cur); if (!it || !await ask('Delete '+label(it)+'?', 'This can\u2019t be undone.', 'Delete', true)) return;
     try{ await api('DELETE','/api/'+kind+'/'+encodeURIComponent(it.id)); items = items.filter(x=>x.id!==it.id); cur = items[0]?.id||null; draw(); }
     catch(e){ toast(e.message,true); }
   }
@@ -1063,7 +1086,7 @@ async function drawHome(){
   const live = (S.active||[]).includes('switch');
   $('#homeSwitch').replaceChildren(!m ? h('p',{class:'empty-s'},'Not set up.') :
     h('button',{class:'arow', onclick:()=>run(m)}, h('span',{}, h('b',{}, live ? 'Switched' : 'Ready'),
-      h('small',{}, (m.hotkey ? m.hotkey+'  ' : 'No key  ')+(fills.length ? fills.map(a=>a.target.replace(/^https?:\/\//,'').split(/[\\/]/).pop()).join(', ') : 'Nothing on screen yet'))),
+      h('small',{}, (m.hotkey || 'No key')+' \u00b7 '+(fills.length ? fills.map(a=>isWeb(a.target) ? new URL(a.target).hostname.replace(/^www\./,'') : a.target.split(/[\\/]/).pop()).join(', ') : 'Nothing on screen yet'))),
       h('em',{}, live ? 'Return' : 'Try')));
   await Promise.all([notes.fetchAll(), tpls.fetchAll()]);
   const pinned = tpls.items().filter(t=>t.pinned);
@@ -1072,7 +1095,7 @@ async function drawHome(){
     [h('p',{class:'empty-s'},'Pin templates to see them here.')]));
   const recent = notes.items().slice(0,5);
   $('#homeNotes').replaceChildren(...(recent.length ? recent.map(n=>h('button',{class:'arow', onclick:()=>{ go('notes'); notes.load().then(()=>notes.open(n.id)); }},
-    h('span',{}, h('b',{}, n.title||n.body.split('\n')[0]||'New note'), h('small',{}, new Date(n.updated).toLocaleDateString([], {day:'numeric',month:'short'}))))) :
+    h('span',{}, h('b',{}, n.title||n.body.split('\n')[0]||'New note'), h('small',{}, new Date(n.updated).toLocaleDateString('en-GB', {day:'numeric',month:'short'}))))) :
     [h('p',{class:'empty-s'},'No notes yet.')]));
 }
 function drawHomeButtons(){
