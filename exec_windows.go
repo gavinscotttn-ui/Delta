@@ -32,7 +32,19 @@ type winFrame struct {
 	closeWeb      bool
 	mediaUndo     []string
 	prevFG        uintptr
+
+	snap []winRef // window list for this run; nil until first needed, reset after launches
 }
+
+// windows returns the run's window snapshot, enumerating at most once until a launch.
+func (f *winFrame) windows() []winRef {
+	if f.snap == nil {
+		f.snap = appWindows()
+	}
+	return f.snap
+}
+
+func (f *winFrame) find(spec string) []winRef { return filterWindows(f.windows(), spec) }
 
 func (f *winFrame) empty() bool {
 	return !f.audioSaved && !f.micSaved && len(f.minimized) == 0 && len(f.hidden) == 0 &&
@@ -68,7 +80,7 @@ func (p *winPlatform) Run(m *Macro, restore func()) (any, error) {
 	f := &winFrame{prevFG: foreground()}
 	if m.Undoable {
 		// Discretion: the Praxis window itself never stays on screen during a switch.
-		for _, w := range appWindows() {
+		for _, w := range f.windows() {
 			if w.title == "Praxis" && isBrowserExe(w.exe) {
 				f.stash(w.hwnd, false)
 			}
@@ -143,11 +155,11 @@ func (p *winPlatform) runAction(a *Action, f *winFrame, used map[uintptr]bool, r
 		}
 		f.stash(h, a.Mode == "hide")
 	case "minimize_apps":
-		for _, w := range findWindows(a.Match) {
+		for _, w := range f.find(a.Match) {
 			f.stash(w.hwnd, a.Mode == "hide")
 		}
 	case "minimize_all":
-		for _, w := range appWindows() {
+		for _, w := range f.windows() {
 			if !isIconic(w.hwnd) {
 				f.stash(w.hwnd, false)
 			}
@@ -160,14 +172,14 @@ func (p *winPlatform) runAction(a *Action, f *winFrame, used map[uintptr]bool, r
 	case "open_url":
 		return shellOpen(strings.TrimSpace(a.Target), "", SW_SHOWNORMAL)
 	case "focus_app":
-		ws := findWindows(a.Match)
+		ws := f.find(a.Match)
 		if len(ws) == 0 {
 			// minimised windows are still "visible" so this covers them too
 			return fmt.Errorf("no window matches %q", a.Match)
 		}
 		forceForeground(ws[0].hwnd)
 	case "close_app":
-		for _, w := range findWindows(a.Match) {
+		for _, w := range f.find(a.Match) {
 			pPostMessageW.Call(w.hwnd, WM_CLOSE, 0, 0)
 		}
 	case "send_keys":
@@ -278,7 +290,7 @@ func (p *winPlatform) fillScreens(a *Action, f *winFrame, used map[uintptr]bool)
 
 	var existing []winRef
 	if !web { // never reuse an existing browser window: it shows something else
-		for _, w := range findWindows(match) {
+		for _, w := range f.find(match) {
 			if !used[w.hwnd] {
 				existing = append(existing, w)
 			}
@@ -292,7 +304,7 @@ func (p *winPlatform) fillScreens(a *Action, f *winFrame, used map[uintptr]bool)
 			h = existing[i].hwnd
 		} else if a.Launch {
 			known := map[uintptr]bool{}
-			for _, w := range findWindows(match) {
+			for _, w := range f.find(match) {
 				known[w.hwnd] = true
 			}
 			for k := range used {
@@ -308,6 +320,7 @@ func (p *winPlatform) fillScreens(a *Action, f *winFrame, used map[uintptr]bool)
 			}
 			h = w.hwnd
 			f.launched = append(f.launched, h)
+			f.snap = nil // a new window exists now
 			if web {
 				f.webWindows = append(f.webWindows, h)
 			}

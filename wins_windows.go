@@ -229,6 +229,18 @@ func (w winRef) matches(terms []string) bool {
 	return false
 }
 
+// filterWindows applies a match spec to an already-enumerated window list.
+func filterWindows(ws []winRef, spec string) []winRef {
+	terms := matchTerms(spec)
+	var out []winRef
+	for _, w := range ws {
+		if len(terms) > 0 && w.matches(terms) && isWindow(w.hwnd) {
+			out = append(out, w)
+		}
+	}
+	return out
+}
+
 func findWindows(spec string) []winRef {
 	terms := matchTerms(spec)
 	if len(terms) == 0 {

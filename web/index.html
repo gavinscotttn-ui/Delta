@@ -272,31 +272,48 @@ const ACTIONS = {
 };
 const COLORS = ['#D7036A','#FF3B30','#FF9500','#FFCC00','#34C759','#5AC8FA','#007AFF','#5856D6','#8E8E93','#1C1C1E'];
 
-let S = null, cfg = null, sig = '', editMode = false, ed = null;
+let S = null, cfg = null, editMode = false, ed = null, tileSig = '', cfgRev = 0;
+let volT = null, volDrag = false; // don't move the slider under the user's finger
 
+// Full load (settings, screens, shortcuts). Only on open, after saving, and when a sheet closes.
 async function refresh(){
   try{
     S = await api('GET','/api/state');
-    if (!ed && !$('#st').open && !swDirty) cfg = S.config;
+    if (!ed && !$('#st').open && !swDirty){ cfg = S.config; cfgRev++; }
     $('#banner').replaceChildren();
-    render();
-  }catch(e){ $('#banner').replaceChildren(h('p',{class:'err',style:{margin:'16px 4px'}}, e.message)); }
+    if (!swBusy()) renderSwitch();
+    renderStatus();
+  }catch(e){ showDown(e); }
 }
+// Light status check while the window is visible. It never rebuilds anything you might be typing in.
+async function poll(){
+  if (!S) return;
+  try{
+    Object.assign(S, await api('GET','/api/status'));
+    $('#banner').replaceChildren();
+    renderStatus();
+  }catch(e){ showDown(e); }
+}
+function showDown(e){ $('#banner').replaceChildren(h('p',{class:'err',style:{margin:'16px 2px'}}, e.message)); }
 
-function render(){
+function renderStatus(){
   const a = S.audio||{};
-  $('#muteBtn').replaceChildren(icon(a.muted?'volume-off':'volume'));
+  setIcon($('#muteBtn'), a.muted?'volume-off':'volume');
   $('#muteBtn').classList.toggle('on', !!a.muted);
   $('#muteBtn').setAttribute('aria-label', a.muted?'Unmute':'Mute');
-  if (document.activeElement !== $('#vol')){ $('#vol').value = a.volume||0; paintVol(); }
+  if (!volDrag && !volT){ $('#vol').value = a.volume||0; paintVol(); }
   $('#vol').disabled = !a.available;
-  $('#micBtn').replaceChildren(icon(a.micMuted?'mic-off':'mic'));
+  setIcon($('#micBtn'), a.micMuted?'mic-off':'mic');
   $('#micBtn').classList.toggle('on', !!a.micMuted);
   $('#micBtn').hidden = !!a.micError;
   $('#pill').classList.toggle('show', (S.active||[]).length>0);
-  const s = JSON.stringify([cfg.macros, S.hotkeys, S.active, S.paused, (S.monitors||[]).length]);
-  if (s !== sig){ sig = s; if (!swFocus()) renderSwitch(); renderTiles(); }
+  swStatus();
+  const t = JSON.stringify([cfgRev, S.hotkeys, S.active, S.paused, editMode]);
+  if (t !== tileSig){ tileSig = t; renderTiles(); }
 }
+// swap an icon only when it actually changes (no flicker every poll)
+function setIcon(el, name){ if (el.dataset.icon !== name){ el.dataset.icon = name; el.replaceChildren(icon(name)); } }
+const swBusy = () => { const c = $('#switchCard'); return c.contains(document.activeElement) && document.activeElement !== document.body || (rec && c.contains(rec.chip)); };
 function paintVol(){ $('#vol').style.setProperty('--p', $('#vol').value+'%'); }
 
 // ---------- Switch card ----------
@@ -339,8 +356,8 @@ function swWrite(m, o){
 function swSave(){
   swDirty = true; clearTimeout(swTimer);
   swTimer = setTimeout(async ()=>{
-    try{ cfg = await api('PUT','/api/config', cfg); }catch(e){ toast(e.message, true); }
-    swDirty = false; sig=''; refresh();
+    try{ cfg = await api('PUT','/api/config', cfg); cfgRev++; }catch(e){ toast(e.message, true); }
+    swDirty = false; poll();
   }, 500);
 }
 
@@ -356,7 +373,7 @@ function screenRow(mon, o, commit, single){
   const kind = h('select',{'aria-label':(single?'Screen':'Screen '+mon.index)+' shows', onchange:e=>{
       const k = e.target.value;
       if (k==='none' || (k==='web') !== isWeb(sc.target)) { sc.target=''; sc.match=''; }
-      sc.kind = k; put(); sig=''; renderSwitch(); }},
+      sc.kind = k; put(); renderSwitch(); }},
     h('option',{value:'none', selected:sc.kind==='none'},'Nothing'),
     h('option',{value:'app', selected:sc.kind==='app'},'App'),
     h('option',{value:'web', selected:sc.kind==='web'},'Website'));
@@ -381,13 +398,11 @@ function renderSwitch(){
   // look the macro up at change time: a background refresh may have replaced cfg
   const commit = ()=>{ const cur = swMacro(); if (cur){ swWrite(cur,o); swSave(); } };
   const set = (k,v)=>{ o[k]=v; commit(); };
-  const hk = S.hotkeys[m.id], live = (S.active||[]).includes('switch');
-  const st = $('#swStatus'); st.classList.toggle('live', live); st.lastChild.textContent = live ? 'Switched' : (S.paused ? 'Keys paused' : 'Ready');
   const mons = (S.monitors||[]).length ? S.monitors : [{index:1,primary:true,w:0,h:0}];
   card.replaceChildren(
     h('div',{class:'swhead'},
       h('div',{style:{flex:'1'}}, h('h3',{},'Switch'), h('p',{}, 'Press the key to hide what you\u2019re doing and show your work. Press it again to go back.')),
-      h('button',{class:'btn solid', onclick:()=>run(m)}, live ? 'Return' : 'Try it')),
+      h('button',{class:'btn solid', id:'swBtn', onclick:()=>run(swMacro())}, 'Try it')),
     h('div',{class:'row'}, h('span',{class:'k'},'Key'), hotkeyChip(m.hotkey, v=>{ const cur = swMacro(); if (cur){ cur.hotkey=v; swSave(); } })),
     h('div',{class:'sub'}, mons.length>1 ? 'Screens' : 'Screen'),
     ...mons.map(mon=>screenRow(mon, o, commit, mons.length===1)),
@@ -398,6 +413,15 @@ function renderSwitch(){
     h('div',{class:'row'}, h('span',{class:'k',style:{flex:'none',width:'120px'}},'Also hide'),
       h('div',{class:'field'}, h('input',{type:'text', value:o.apps, placeholder:'Netflix, YouTube', 'aria-label':'Also hide', oninput:e=>set('apps', e.target.value)}))),
     h('div',{class:'row'}, h('span',{class:'k'},'Hide by'), seg([['minimize','Minimising'],['hide','Removing from taskbar']], o.mode, v=>set('mode',v))));
+  swStatus();
+}
+
+function swStatus(){
+  const m = swMacro(); if (!m) return;
+  const hk = S.hotkeys[m.id], live = (S.active||[]).includes('switch');
+  const st = $('#swStatus'); st.classList.toggle('live', live);
+  st.lastChild.textContent = live ? 'Switched' : (S.paused ? 'Keys paused' : 'Ready');
+  const btn = $('#swBtn'); if (btn) btn.textContent = live ? 'Return' : 'Try it';
   $('#swFoot').textContent = hk && hk!=='ok' && hk!=='paused' ? 'That key is already used by another app. Pick another.' :
     TYPING_KEYS.test(m.hotkey||'') ? m.hotkey+' is reserved for Switch, so it won\u2019t do its usual job in other apps. Pause keys in Settings if you need it.' :
     'Websites open in their own browser window and close again when you return. Also hide matches window titles or program names.';
@@ -425,13 +449,13 @@ function renderTiles(){
   }), h('button',{class:'tile add', onclick:()=>openEditor(null)}, icon('plus'), h('span',{},'New shortcut')));
 }
 function flash(t){ t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash'); }
-$('#editBtn').onclick = ()=>{ editMode = !editMode; $('#editBtn').textContent = editMode?'Done':'Edit'; sig=''; render(); };
+$('#editBtn').onclick = ()=>{ editMode = !editMode; $('#editBtn').textContent = editMode?'Done':'Edit'; renderStatus(); };
 
 async function run(m){
-  try{ await api('POST','/api/run/'+encodeURIComponent(m.id)); setTimeout(refresh,300); setTimeout(refresh,1200); }
+  try{ await api('POST','/api/run/'+encodeURIComponent(m.id)); setTimeout(poll,250); setTimeout(poll,1000); }
   catch(e){ toast(e.message,true); }
 }
-async function saveConfig(next){ cfg = await api('PUT','/api/config', next); sig=''; await refresh(); return cfg; }
+async function saveConfig(next){ cfg = await api('PUT','/api/config', next); cfgRev++; await refresh(); return cfg; }
 async function move(from, to){
   if (from===to || isNaN(from)) return;
   const next = structuredClone(cfg); const [m] = next.macros.splice(from,1); next.macros.splice(to,0,m);
@@ -523,11 +547,14 @@ document.addEventListener('keydown', e=>{
 
 // ---------- header ----------
 $('#setBtn').append(icon('sliders'));
-$('#muteBtn').onclick = ()=>api('POST','/api/audio',{mute:!S.audio.muted}).then(refresh).catch(e=>toast(e.message,true));
-$('#micBtn').onclick = ()=>api('POST','/api/audio',{micMute:!S.audio.micMuted}).then(refresh).catch(e=>toast(e.message,true));
-let volT;
-$('#vol').oninput = e=>{ paintVol(); clearTimeout(volT); volT = setTimeout(()=>api('POST','/api/audio',{volume:+e.target.value}).catch(er=>toast(er.message,true)), 60); };
-$('#returnBtn').onclick = ()=>api('POST','/api/restore').then(()=>setTimeout(refresh,300)).catch(e=>toast(e.message,true));
+const setAudio = body => api('POST','/api/audio',body).then(a=>{ S.audio = a; renderStatus(); }).catch(e=>toast(e.message,true));
+$('#muteBtn').onclick = ()=>setAudio({mute:!S.audio.muted});
+$('#micBtn').onclick = ()=>setAudio({micMute:!S.audio.micMuted});
+$('#vol').onpointerdown = ()=>{ volDrag = true; };
+addEventListener('pointerup', ()=>{ volDrag = false; });
+$('#vol').oninput = e=>{ paintVol(); clearTimeout(volT);
+  volT = setTimeout(()=>{ volT = null; setAudio({volume:+e.target.value}); }, 60); };
+$('#returnBtn').onclick = ()=>api('POST','/api/restore').then(()=>setTimeout(poll,250)).catch(e=>toast(e.message,true));
 
 // ---------- app picker ----------
 let pickCb = null;
@@ -551,7 +578,7 @@ function openEditor(index, preset){
   drawEditor(); $('#ed').showModal();
 }
 // 'close' fires asynchronously: ignore it if the editor was already reopened.
-$('#ed').addEventListener('close', ()=>{ if ($('#ed').open) return; ed=null; stopRec(); sig=''; refresh(); });
+$('#ed').addEventListener('close', ()=>{ if ($('#ed').open) return; ed=null; stopRec(); refresh(); });
 $('#edCancel').onclick = ()=>$('#ed').close();
 $('#edSave').onclick = async ()=>{
   const m = ed.m; m.name = m.name.trim() || 'Shortcut'; m.undoable = m.undoable || m.toggle;
@@ -643,9 +670,9 @@ function field(a,f){
 }
 
 // ---------- settings ----------
-$('#setBtn').onclick = ()=>{ drawSettings(); $('#st').showModal(); };
+$('#setBtn').onclick = async ()=>{ await refresh(); drawSettings(); $('#st').showModal(); };
 $('#stDone').onclick = ()=>$('#st').close();
-$('#st').addEventListener('close', ()=>{ sig=''; refresh(); });
+$('#st').addEventListener('close', ()=>refresh());
 async function setSetting(fn){
   const next = structuredClone(S.config); fn(next.settings);
   try{ await saveConfig(next); }catch(e){ toast(e.message,true); }
@@ -662,7 +689,7 @@ function drawSettings(){
     grp(check('Start with Windows', s.runAtStartup, v=>setSetting(x=>x.runAtStartup=v)),
         check('Open this window on start', s.openDeckOnLaunch, v=>setSetting(x=>x.openDeckOnLaunch=v)),
         check('Keep Switch apps ready', s.prewarmApps, v=>setSetting(x=>x.prewarmApps=v), 'Opens them minimised at start so switching is instant.'),
-        check('Keys active', !S.paused, v=>api('POST','/api/hotkeys',{paused:!v}).then(refresh))),
+        check('Keys active', !S.paused, v=>api('POST','/api/hotkeys',{paused:!v}).then(poll))),
     h('div',{class:'sec'}, h('h2',{},'Discretion')),
     grp(check('Tray icon', !s.hideTray, v=>setSetting(x=>x.hideTray=!v), 'Off: open Praxis again from its file to show this window.'),
         check('Notifications', s.notifyOnRun, v=>setSetting(x=>x.notifyOnRun=v)),
@@ -695,8 +722,8 @@ async function resetCfg(){
 }
 
 refresh();
-setInterval(()=>{ if (!document.hidden) refresh(); }, 2000);
-document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) refresh(); });
+setInterval(()=>{ if (!document.hidden) poll(); }, 2500);
+document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) poll(); });
 </script>
 </body>
 </html>

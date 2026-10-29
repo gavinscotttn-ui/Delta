@@ -317,6 +317,7 @@ func runMain(app *App) {
 			app.log.Warn("run at startup: %v", err)
 		}
 	}
+	go func() { _, _, _ = audioGetBoth() }() // first COM audio call loads DLLs (~100 ms); do it now, not mid-switch
 	if cfg.Settings.PrewarmApps {
 		go p.Prewarm(cfg.Macros)
 	}

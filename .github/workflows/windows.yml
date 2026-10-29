@@ -19,7 +19,8 @@ jobs:
           go vet ./...
           go test ./...
       - name: Build Praxis.exe
-        run: go build -trimpath -ldflags "-s -w -H windowsgui" -o Praxis.exe .
+        # symbols kept on purpose: stripped Go binaries look "packed" to antivirus heuristics
+        run: go build -trimpath -ldflags "-H windowsgui" -o Praxis.exe .
       - name: Windows integration self-test
         shell: pwsh
         run: |
@@ -72,16 +73,24 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: Praxis
+      - name: Checksum
+        run: |
+          sum=$(sha256sum Praxis.exe | cut -d' ' -f1)
+          cat > notes.md <<NOTES
+          **Download \`Praxis.exe\` below, then double-click it.** No installer or admin rights needed.
+
+          SHA-256: \`$sum\`
+
+          Praxis is not code-signed yet, so Windows SmartScreen and some antivirus tools (Avast, AVG) may warn about
+          or quarantine it because it is new and unknown. Check the SHA-256 above matches your file (in PowerShell:
+          \`Get-FileHash .\\Praxis.exe\`), then allow it in your antivirus.
+          NOTES
+          sed -i 's/^          //' notes.md
       - uses: softprops/action-gh-release@v2
         with:
           files: Praxis.exe
+          body_path: notes.md
           tag_name: v1.0.${{ github.run_number }}
           name: Praxis 1.0.${{ github.run_number }}
           target_commitish: ${{ github.sha }}
           make_latest: true
-          body: |
-            **Download `Praxis.exe` below, then double-click it.** No installer or admin rights needed; it lives in the system tray.
-            Windows SmartScreen may warn because the exe is unsigned: click **More info → Run anyway**.
-
-            Default hotkeys: **Pause** = Panic (press again to undo), **Shift+Pause** = All clear.
-            Change the panic app (Notepad by default) by clicking ✎ on the Panic tile.

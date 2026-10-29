@@ -38,6 +38,10 @@ type Server struct {
 
 	onConfigChanged func(old, new Config)
 
+	audioMu  sync.Mutex
+	audioAt  time.Time
+	audioVal AudioState
+
 	remoteMu  sync.Mutex
 	remoteSrv *http.Server
 	sessions  map[string]time.Time
@@ -117,6 +121,18 @@ func (s *Server) Handler() http.Handler {
 
 	api := http.NewServeMux()
 	api.HandleFunc("GET /api/state", s.handleState)
+	api.HandleFunc("GET /api/status", func(w http.ResponseWriter, r *http.Request) {
+		// polled while the window is open: no config, no log, cached audio
+		writeJSON(w, 200, map[string]any{
+			"hotkeys": s.eng.HotkeyStatus(),
+			"paused":  s.eng.Paused(),
+			"active":  s.eng.ActiveMacros(),
+			"audio":   s.audio(false),
+		})
+	})
+	api.HandleFunc("GET /api/log", func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, 200, s.log.Entries())
+	})
 	api.HandleFunc("PUT /api/config", s.handlePutConfig)
 	api.HandleFunc("POST /api/run/{id}", func(w http.ResponseWriter, r *http.Request) {
 		s.runAsync(w, r.PathValue("id"), "deck")
@@ -233,7 +249,7 @@ func (s *Server) handleState(w http.ResponseWriter, r *http.Request) {
 		"hotkeys":  s.eng.HotkeyStatus(),
 		"paused":   s.eng.Paused(),
 		"active":   s.eng.ActiveMacros(),
-		"audio":    s.plat.Audio(),
+		"audio":    s.audio(true),
 		"monitors": mons,
 		"log":      s.log.Entries(),
 		"remote":   s.remoteInfo(cfg),
@@ -302,7 +318,18 @@ func (s *Server) handleAudio(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, strings.Join(errs, "; "))
 		return
 	}
-	writeJSON(w, 200, s.plat.Audio())
+	writeJSON(w, 200, s.audio(true))
+}
+
+// audio returns the speaker/mic state, reusing a reading younger than a second
+// unless fresh is requested (after a change made through the window).
+func (s *Server) audio(fresh bool) AudioState {
+	s.audioMu.Lock()
+	defer s.audioMu.Unlock()
+	if fresh || time.Since(s.audioAt) > time.Second {
+		s.audioVal, s.audioAt = s.plat.Audio(), time.Now()
+	}
+	return s.audioVal
 }
 
 // ---------------- remote (LAN) deck ----------------
@@ -430,7 +457,7 @@ func (s *Server) remoteHandler() http.Handler {
 				out = append(out, tile{m.ID, m.Name, m.Icon, m.Color, active[m.ID]})
 			}
 		}
-		writeJSON(w, 200, map[string]any{"macros": out, "audio": s.plat.Audio()})
+		writeJSON(w, 200, map[string]any{"macros": out, "audio": s.audio(false)})
 	}))
 	mux.HandleFunc("POST /r/run/{id}", s.remoteOnly(func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
