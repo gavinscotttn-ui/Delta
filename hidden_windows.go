@@ -64,7 +64,7 @@ func ledgerInit(dir string, log *Logger) {
 	}
 	_ = os.Remove(ledger.path)
 	if shown > 0 && log != nil {
-		log.Info("brought back %d window(s) left hidden when Praxis last closed", shown)
+		log.Info("brought back %d window(s) left off the taskbar when Praxis last closed", shown)
 	}
 }
 

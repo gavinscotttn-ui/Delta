@@ -172,7 +172,7 @@ test("backup round trip, and bad files are rejected without damage", async () =>
   writeFileSync("/tmp/astra-bad.json", JSON.stringify({ templates: [{ title: 1 }], shortcuts: "no" }));
   await page.setInputFiles("#importFile", "/tmp/astra-bad.json");
   await page.waitForFunction(() =>
-    /not a valid Astra backup/.test(document.querySelector("#toast").textContent),
+    /not a valid workspace backup/.test(document.querySelector("#toast").textContent),
   );
 
   backup.templates = [{ id: "x", title: "Only one", category: "C", body: "b" }, null, 5];

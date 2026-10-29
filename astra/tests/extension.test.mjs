@@ -303,7 +303,7 @@ test("installed as an extension, Astra is what every new tab shows", async (t) =
   /* The shortcut list names the key the browser actually has for Astra Lite. */
   await page.click('[data-action="keys"]');
   await page.waitForSelector(".keys-table");
-  assert.match(await page.textContent(".keys-table"), /Alt Q\s*Astra Lite, on top of any page/);
+  assert.match(await page.textContent(".keys-table"), /Alt Q\s*Praxis Lite, on top of any page/);
 });
 
 /* ------------------------------------------------------------------ side panel */

@@ -86,13 +86,13 @@ window.AstraTriageView = (function () {
   function guideHtml(r) {
     const s = r.search;
     if (!r.guide)
-      return `<p class="muted">No guide matches this well enough.</p><div class="tool-actions"><button class="secondary-btn" data-triage="ask">Ask Astra about it</button></div>`;
+      return `<p class="muted">No guide matches this well enough.</p><div class="tool-actions"><button class="secondary-btn" data-triage="ask">Ask Praxis about it</button></div>`;
     const others = (s ? s.guides : []).filter((g) => g.item.id !== r.guide.id).slice(0, 2);
     const also = others.length
       ? `<p class="hint">Also: ${others.map((g) => `<button class="link-btn" data-triage="guide" data-id="${esc(g.item.id)}">${esc(g.item.title)}</button>`).join(" · ")}</p>`
       : "";
     if (r.weak)
-      return `<p class="muted">No guide matches this closely. This one might help:</p><p><button class="link-btn" data-triage="guide" data-id="${esc(r.guide.id)}">${esc(r.guide.title)}</button></p><div class="tool-actions"><button class="secondary-btn" data-triage="ask">Ask Astra about it</button></div>${also}`;
+      return `<p class="muted">No guide matches this closely. This one might help:</p><p><button class="link-btn" data-triage="guide" data-id="${esc(r.guide.id)}">${esc(r.guide.title)}</button></p><div class="tool-actions"><button class="secondary-btn" data-triage="ask">Ask Praxis about it</button></div>${also}`;
     const label = r.fromReply
       ? "Matches the email"
       : { strong: "Good match", possible: "Possible match" }[s.confidence] || "";
@@ -101,7 +101,7 @@ window.AstraTriageView = (function () {
         r.workflow
           ? `<button class="secondary-btn" data-triage="workflow" data-id="${esc(r.workflow.id)}">Start “${esc(r.workflow.title)}”</button>`
           : ""
-      }<button class="secondary-btn" data-triage="ask">Ask Astra</button></div>${also}`;
+      }<button class="secondary-btn" data-triage="ask">Ask Praxis</button></div>${also}`;
   }
 
   function checksHtml(t) {

@@ -14,6 +14,9 @@
     ["", ["Settings"]],
   ];
   const PAGES = NAV.flatMap(([, pages]) => pages);
+  /* Inside Praxis, the window around Astra (sidebar, search, privacy screen, Buttons) belongs to Praxis.
+     Every use of it is optional: without it Astra behaves exactly as on its own. */
+  const praxis = () => window.PraxisHost || null;
   const KB_TYPES = ["Guide", "Example", "Fault", "How-to", "Reference"];
   const KB = window.AstraKB;
   const SLOTS = ["AM 08:00–13:00", "PM 13:00–18:00"];
@@ -516,6 +519,7 @@
     modal.className = "modal" + (wide ? " wide" : "");
     modal.innerHTML = html;
     modalLayer.classList.add("open");
+    praxis()?.modal?.(true);
     setTimeout(() => {
       const first =
         $(".modal-body input, .modal-body textarea, .modal-body select", modal) ||
@@ -529,6 +533,7 @@
   function closeModal() {
     if (!modalLayer.classList.contains("open")) return;
     modalLayer.classList.remove("open");
+    praxis()?.modal?.(false);
     modal.innerHTML = "";
     if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
     lastFocus = null;
@@ -539,8 +544,14 @@
       sub ? `<p>${esc(sub)}</p>` : ""
     }</div><button type="button" class="icon-btn" data-action="close" aria-label="Close">×</button></div>`;
 
+  /* Asks before something that cannot be undone. Inside Praxis this is Praxis's own sheet. */
+  function sure(question, detail, okLabel, then) {
+    if (praxis()?.ask) return praxis().ask(question, detail, okLabel, true).then((ok) => ok && then());
+    if (confirm(detail ? `${question} ${detail}` : question)) then();
+  }
+
   function confirmDelete(label, onConfirm) {
-    if (confirm(`Delete this ${label}? Export a backup first if you may need it later.`)) onConfirm();
+    sure(`Delete this ${label}?`, "Export a backup first if you may need it later.", "Delete", onConfirm);
   }
 
   /* --------------------------------------------------------------- navigation */
@@ -566,6 +577,7 @@
     $("#sidebar").classList.remove("open");
     render();
     scrollTo(0, 0);
+    praxis()?.pageChanged?.(page);
   }
 
   /* Redrawing a page replaces its elements. Whatever had focus, and anything typed into a field that is drawn
@@ -1180,7 +1192,7 @@
       modalHead("Keyboard shortcuts") +
         `<div class="modal-body"><table class="keys-table"><tbody>
         ${row(["Ctrl K"], "Search everything")}
-        ${liteKey ? row([liteKey], "Astra Lite, on top of any page") : ""}
+        ${liteKey ? row([liteKey], "Praxis Lite, on top of any page") : ""}
         ${row(["/"], "Search on Home")}
         ${row(["Ctrl Enter"], "Triage the pasted email")}
         ${row(["Enter"], "Ask the question")}
@@ -1225,7 +1237,7 @@
   function globalSearch() {
     openModal(
       modalHead("Find anything") +
-        `<div class="modal-body"><input class="search-input full" id="globalSearchInput" role="combobox" aria-expanded="true" aria-controls="globalResults" aria-autocomplete="list" aria-label="Search Astra" placeholder="Templates, quick lines, guides, documents, numbers" autocomplete="off"><div class="search-results show mt" id="globalResults" role="listbox"><div class="empty">Start typing.</div></div></div>`,
+        `<div class="modal-body"><input class="search-input full" id="globalSearchInput" role="combobox" aria-expanded="true" aria-controls="globalResults" aria-autocomplete="list" aria-label="Search Praxis" placeholder="Templates, quick lines, guides, documents, numbers" autocomplete="off"><div class="search-results show mt" id="globalResults" role="listbox"><div class="empty">Start typing.</div></div></div>`,
     );
     const input = $("#globalSearchInput");
     const box = $("#globalResults");
@@ -1241,7 +1253,7 @@
     function showResults() {
       const q = input.value.trim();
       const askRow = q
-        ? `<button class="result-row" data-action="ask-from-search" data-q="${esc(q)}"><span class="result-type">Ask</span><span><b>Ask Astra: ${esc(q)}</b><small>An answer from the guides and documents</small></span><b aria-hidden="true">→</b></button>`
+        ? `<button class="result-row" data-action="ask-from-search" data-q="${esc(q)}"><span class="result-type">Ask</span><span><b>Ask Praxis: ${esc(q)}</b><small>An answer from the guides and documents</small></span><b aria-hidden="true">→</b></button>`
         : "";
       box.innerHTML = resultsHtml(searchRows(q, 5), q ? "No match." : "Start typing.") + askRow;
     }
@@ -1314,7 +1326,7 @@
           <div class="start-search">
             <div class="search-toggle" role="group" aria-label="Search where">
               <button class="${searchMode === "Google" ? "active" : ""}" aria-pressed="${searchMode === "Google"}" data-action="mode" data-id="Google">Google</button>
-              <button class="${searchMode === "Astra" ? "active" : ""}" aria-pressed="${searchMode === "Astra"}" data-action="mode" data-id="Astra">Astra</button>
+              <button class="${searchMode === "Astra" ? "active" : ""}" aria-pressed="${searchMode === "Astra"}" data-action="mode" data-id="Astra">Praxis</button>
             </div>
             <input id="startSearch" aria-label="Search" autocomplete="off" placeholder="${
               searchMode === "Google" ? "Search Google" : "Find a template, workflow or guide"
@@ -1331,6 +1343,7 @@
           <div class="home-lines" id="homeLines">${homeLinesHtml()}</div>
         </section>
         <div class="grid">
+          ${praxisButtonsHtml()}
           <section class="card card-pad">
             <form class="home-triage" id="homeTriage"><label class="field"><span>Triage an email</span><textarea id="homeTriageInput" rows="5" placeholder="Paste the customer's email or ticket" spellcheck="false"></textarea></label><button class="primary-btn" type="submit">Triage <kbd>Ctrl Enter</kbd></button></form>
           </section>
@@ -1391,6 +1404,22 @@
       e.preventDefault();
       $("#homeLines .home-line")?.click();
     });
+  }
+
+  /* Praxis's Buttons, one click each, on Home. */
+  function praxisButtonsList() {
+    return (praxis()?.buttons?.() || [])
+      .map(
+        (b) =>
+          `<button class="quick-link praxis-button${b.active ? " on" : ""}" data-action="praxis-run" data-id="${esc(b.id)}" aria-pressed="${!!b.active}"><span class="praxis-ic" aria-hidden="true">${b.svg || esc(b.letter || "")}</span><span><b>${esc(b.name)}</b><small>${esc(b.hotkey || "No key")}</small></span></button>`,
+      )
+      .join("");
+  }
+  function praxisButtonsHtml() {
+    const list = praxisButtonsList();
+    return list
+      ? `<section class="card card-pad"><div class="section-title"><h3>Buttons</h3><button data-action="praxis-page" data-id="buttons">Edit</button></div><div class="quick-links" id="praxisButtons">${list}</div></section>`
+      : "";
   }
 
   function relativeTime(iso) {
@@ -1753,7 +1782,7 @@
             : ""
         }<span class="line-done" aria-hidden="true">Copied</span></span></button><div class="row-actions"><button class="star-btn ${
           l.favourite ? "on" : ""
-        }" data-action="star-line" data-id="${esc(l.id)}" aria-pressed="${l.favourite}" aria-label="Star: keep on Home and in Astra Lite" title="Keep on Home and in Astra Lite">${
+        }" data-action="star-line" data-id="${esc(l.id)}" aria-pressed="${l.favourite}" aria-label="Star: keep on Home and in Praxis Lite" title="Keep on Home and in Praxis Lite">${
           l.favourite ? "★" : "☆"
         }</button><button class="secondary-btn" data-action="edit-line" data-id="${esc(l.id)}">Edit</button></div></article>`,
     });
@@ -2978,7 +3007,7 @@
   let setupStep = 0;
   function setupFlow(step = 0) {
     setupStep = step;
-    const steps = ["Your details", "Appearance", "How Astra behaves"];
+    const steps = ["Your details", "Appearance", "How Praxis behaves"];
     const ai = AstraAI.support().ok && !installing;
     const bodies = [
       `<p>Used to sign emails and stamp ticket notes.</p><div class="fields cols-2">
@@ -2986,7 +3015,7 @@
         <label class="field"><span>Initials</span><input id="setupInitials" maxlength="4" value="${esc(state.profile.initials)}" placeholder="Made from your name"></label>
         <label class="field"><span>Company</span><input id="setupCompany" value="${esc(state.profile.company)}" autocomplete="organization"></label></div>`,
       `${appearanceHtml("setup")}`,
-      `<label class="check-line"><input type="checkbox" id="setupPrivacy" ${state.settings.privacyOnHide ? "checked" : ""}> <span><b>Privacy screen</b> whenever you switch away from Astra</span></label>
+      `<label class="check-line"><input type="checkbox" id="setupPrivacy" ${state.settings.privacyOnHide ? "checked" : ""}> <span><b>Privacy screen</b> whenever you switch away from Praxis</span></label>
        ${
          ai
            ? `<label class="check-line"><input type="checkbox" id="setupAI" ${state.ai.model ? "disabled" : ""}> <span><b>Add the AI assistant</b>: downloads once (about 0.5 GB) in the background, then works with no internet</span></label>`
@@ -2994,16 +3023,16 @@
        }
        <p class="hint">Press <kbd>Ctrl K</kbd> to search everything, <kbd>?</kbd> for every shortcut, and paste a customer email on Home to triage it.${
          extensionId
-           ? ` On any other page, select a customer's email, right-click and choose <b>Triage with Astra</b>; Astra Lite in the toolbar${liteKey ? ` (<kbd>${esc(liteKey)}</kbd>)` : ""} finds replies and numbers on top of whatever you are doing.`
+           ? ` On any other page, select a customer's email, right-click and choose <b>Triage with Praxis</b>; Praxis Lite in the toolbar${liteKey ? ` (<kbd>${esc(liteKey)}</kbd>)` : ""} finds replies and numbers on top of whatever you are doing.`
            : ""
        }</p>`,
     ];
     const last = step === steps.length - 1;
     openModal(
-      modalHead(steps[step], `Setting up Astra · step ${step + 1} of ${steps.length}`) +
+      modalHead(steps[step], `Setting up Praxis · step ${step + 1} of ${steps.length}`) +
         `<div class="modal-body setup-body">${bodies[step]}</div><div class="modal-foot"><div class="foot-left"><button class="secondary-btn" data-action="setup-skip">Skip setup</button></div><div>${
           step ? '<button class="secondary-btn" data-action="setup-back">Back</button>' : ""
-        }<button class="primary-btn" data-action="setup-next">${last ? "Start using Astra" : "Next"}</button></div></div>`,
+        }<button class="primary-btn" data-action="setup-next">${last ? "Start using Praxis" : "Next"}</button></div></div>`,
     );
   }
 
@@ -3071,9 +3100,9 @@
       <section class="card setting-card"><h3>Appearance</h3>${appearanceHtml("set")}
         <div class="tool-actions"><button class="secondary-btn" data-action="setup">Run setup again</button></div></section>
       <section class="card setting-card"><h3>Privacy</h3>
-        ${toggleRow("privacyOnHide", "Privacy screen when hidden", "Covers Astra when you switch tabs or minimise.")}
+        ${toggleRow("privacyOnHide", "Privacy screen when hidden", "Covers Praxis when you switch to another window or minimise it.")}
       </section>
-      <section class="card setting-card"><h3>Quick line shortcuts</h3><p>Type a quick line's shortcut and a space, such as <kbd>;close5</kbd>, and it becomes the line. Works in every box in Astra; set them on the Templates page.</p>
+      <section class="card setting-card"><h3>Quick line shortcuts</h3><p>Type a quick line's shortcut and a space, such as <kbd>;close5</kbd>, and it becomes the line. Works in every box in Praxis; set them on the Templates page.</p>
         ${
           extensionId
             ? `<div class="switch-row"><span><b>In Zoho Desk too</b><small>Asks the browser for access to Zoho's pages (zoho.eu and zoho.com). Only the characters just before the cursor are read, and nothing is sent anywhere.</small></span><button class="switch ${
@@ -3122,7 +3151,7 @@
           "",
         )}</div><div class="tool-actions"><button class="primary-btn" data-action="save-shortcuts">Save shortcuts</button></div></section>
       <section class="card setting-card"><h3>Backup</h3><div class="actions"><button class="secondary-btn" data-action="export">Export backup</button><button class="secondary-btn" data-action="import">Import backup</button></div></section>
-      <section class="card setting-card"><h3>Reset</h3><p>Restores the built-in templates, quick lines, workflows, guides and shortcuts. Export a backup first to keep your own.</p><button class="danger-btn" data-action="reset">Reset Astra</button></section>
+      <section class="card setting-card"><h3>Reset</h3><p>Restores the built-in templates, quick lines, workflows, guides and shortcuts. Export a backup first to keep your own.</p><button class="danger-btn" data-action="reset">Reset the workspace</button></section>
     </div>`;
   }
 
@@ -3162,7 +3191,7 @@
     select.onchange = () => ($('[data-action="remove-ai"]').hidden = !removable());
     if (installing) showInstalling();
     box.textContent = list.length
-      ? "Installed on this computer. It starts on the first question after Astra opens and needs no internet."
+      ? "Installed on this computer. It starts on the first question after Praxis opens and needs no internet."
       : "Downloads once, then works with no internet. Nothing you type is ever sent anywhere.";
   }
 
@@ -3302,7 +3331,7 @@
       render();
       toast("Backup imported and saved");
     } catch {
-      toast("That file is not a valid Astra backup");
+      toast("That file is not a valid workspace backup");
     }
   }
 
@@ -3310,8 +3339,11 @@
 
   const ACTIONS = {
     page: (el) => go(el.dataset.id),
+    "praxis-run": (el) => praxis()?.run?.(el.dataset.id),
+    "praxis-page": (el) => praxis()?.show?.(el.dataset.id),
     menu: () => $("#sidebar").classList.toggle("open"),
     lock: () => {
+      if (praxis()?.lock) return praxis().lock();
       $("#privacyScreen").classList.add("show");
       $("#privacyScreen button").focus();
     },
@@ -3359,7 +3391,7 @@
       el.classList.toggle("on", l.favourite);
       el.setAttribute("aria-pressed", l.favourite);
       el.textContent = l.favourite ? "★" : "☆";
-      toast(l.favourite ? "Starred: on Home and in Astra Lite" : "Unstarred");
+      toast(l.favourite ? "Starred: on Home and in Praxis Lite" : "Unstarred");
     },
     "template-tab": (el) => {
       templateTab = el.dataset.id === "templates" ? "templates" : "lines";
@@ -3491,12 +3523,12 @@
         state.gaps.map((g) => `- ${g.q}${g.n > 1 ? ` (asked ${g.n} times)` : ""}`).join("\n"),
         "List copied",
       ),
-    "clear-gaps": () => {
-      if (!confirm("Clear the list of questions Astra could not answer?")) return;
-      state.gaps = [];
-      save();
-      render();
-    },
+    "clear-gaps": () =>
+      sure("Clear the list of questions Praxis could not answer?", "", "Clear", () => {
+        state.gaps = [];
+        save();
+        render();
+      }),
     "del-gap": (el) => {
       state.gaps.splice(Number(el.dataset.i), 1);
       save();
@@ -3625,9 +3657,8 @@
     "ask-from-search": (el) => (closeModal(), AstraAsk.ask(el.dataset.q)),
     export: exportBackup,
     import: () => $("#importFile").click(),
-    reset: () => {
-      if (!confirm("Reset Astra to its built-in content? Export first if you need your current work."))
-        return;
+    reset: () =>
+      sure("Reset the workspace to its built-in content?", "Export first if you need your current work.", "Reset", () => {
       try {
         localStorage.removeItem(KEY);
       } catch {
@@ -3639,7 +3670,7 @@
       save();
       render();
       toast("Workspace reset");
-    },
+    }),
   };
 
   document.addEventListener("click", (e) => {
@@ -3673,7 +3704,7 @@
   });
 
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden && state.settings.privacyOnHide) $("#privacyScreen").classList.add("show");
+    if (document.hidden && state.settings.privacyOnHide) ACTIONS.lock();
   });
 
   document.addEventListener("keydown", (e) => {
@@ -3682,7 +3713,8 @@
 
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
       e.preventDefault();
-      globalSearch();
+      if (praxis()?.palette) praxis().palette();
+      else globalSearch();
       return;
     }
     if (e.key === "Escape") {
@@ -3726,7 +3758,8 @@
       const at = pressed === "0" ? 9 : Number(pressed) - 1;
       if (/^[0-9]$/.test(pressed) && PAGES[at] && !state.shortcuts.some((x) => x.key === pressed)) {
         e.preventDefault();
-        go(PAGES[at]);
+        if (praxis()?.altPage) praxis().altPage(pressed);
+        else go(PAGES[at]);
         return;
       }
       const s = state.shortcuts.find((x) => x.key === pressed);
@@ -3834,6 +3867,58 @@
     page = next;
     render();
   };
+  /* What Praxis calls. Rows from search keep the action they would run from Astra's own search. */
+  window.AstraApp = {
+    pages: PAGES.slice(),
+    page: () => page,
+    go: (next) => PAGES.includes(next) && (next === page ? scrollTo(0, 0) : showPage(next)),
+    search: (query, perKind = 5) =>
+      searchRows(query, perKind).map((r) => ({
+        type: r.type,
+        title: r.item.title,
+        sub: r.snippet ? r.snippet.replace(/<[^>]*>/g, "") : (r.label ?? r.item.category ?? ""),
+        action: r.action || "",
+        id: r.item.id,
+        href: r.href || "",
+      })),
+    /* Runs a search row's action exactly as clicking it in Astra would. */
+    run: (action, id, data = {}) => {
+      if (!ACTIONS[action]) return false;
+      const el = document.createElement("button");
+      el.hidden = true;
+      el.dataset.action = action;
+      el.dataset.id = id;
+      for (const [k, v] of Object.entries(data)) el.dataset[k] = v;
+      document.body.append(el);
+      el.click();
+      el.remove();
+      return true;
+    },
+    ask: (q) => (closeModal(), showPage("Ask"), AstraAsk.ask(q)),
+    triage: (text) => {
+      AstraTriageView.start(String(text).slice(0, 50000));
+      showPage("Triage");
+    },
+    refreshButtons: () => {
+      const box = $("#praxisButtons");
+      if (box) box.innerHTML = praxisButtonsList();
+    },
+    modalOpen: () => modalLayer.classList.contains("open"),
+    closeModal: () => closeModal(),
+    /* Templates made in Praxis before the merge; added once, never twice. */
+    addTemplates: (list) => {
+      const have = new Set(state.templates.map((t) => t.id));
+      const fresh = asList(list)
+        .map(normalTemplate)
+        .filter((t) => !have.has(t.id));
+      if (!fresh.length) return 0;
+      state.templates.unshift(...fresh);
+      save();
+      if (page === "Home" || page === "Templates") render();
+      return fresh.length;
+    },
+  };
+
   /* Automated browsers (tests) skip setup unless the address asks for it with #setup. */
   if (!state.settings.setupDone && (!navigator.webdriver || location.hash === "#setup")) setupFlow(0);
   openFromLink();

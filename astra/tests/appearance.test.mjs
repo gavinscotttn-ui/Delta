@@ -34,7 +34,7 @@ test("first-run setup: details, appearance and behaviour, then it never comes ba
   assert.equal(await page.inputValue("#setupName"), "Alex Morgan", "Back keeps what was typed");
   await page.click('[data-action="setup-next"]');
   await page.click('[data-action="setup-next"]');
-  assert.match(await page.textContent("#modalTitle"), /How Astra behaves/);
+  assert.match(await page.textContent("#modalTitle"), /How Praxis behaves/);
   await page.check("#setupPrivacy");
   await page.click('[data-action="setup-next"]');
   await page.waitForSelector(".setup-body", { state: "detached" });

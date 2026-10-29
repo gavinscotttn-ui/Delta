@@ -1,0 +1,39 @@
+/* Astra inside the Praxis window: Praxis draws the sidebar, search and title. */
+.in-praxis .sidebar,
+.in-praxis .topbar {
+  display: none !important;
+}
+.in-praxis .main {
+  margin-left: 0 !important;
+}
+.in-praxis .content {
+  padding-top: 28px;
+}
+
+/* Praxis's Buttons on Home */
+.praxis-button {
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+.praxis-button.on {
+  box-shadow: inset 0 0 0 2px var(--pink);
+}
+.praxis-ic {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  color: var(--accent);
+  font-weight: 700;
+}
+.praxis-ic svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

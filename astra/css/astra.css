@@ -3208,6 +3208,14 @@ a.primary-btn {
   align-items: start;
 }
 
+/* Placed after the rules above so it wins: on a narrow window the Home columns stack. */
+@media (max-width: 980px) {
+  .dash,
+  .dash-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .home-lines-card .search-input {
   margin-bottom: 10px;
 }

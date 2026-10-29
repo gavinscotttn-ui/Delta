@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -170,5 +171,70 @@ func TestItemStore(t *testing.T) {
 	}
 	if _, err := s.Put(Item{Body: strings.Repeat("x", maxItemBody+1)}); err == nil {
 		t.Error("oversized body accepted")
+	}
+}
+
+func TestKVStore(t *testing.T) {
+	dir := t.TempDir()
+	s := LoadKVStore(dir)
+	v := "{\"a\":1}"
+	if err := s.Set("astra.offline.fresh.v1", &v); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Set("praxis.secret", &v); err == nil {
+		t.Error("key outside the workspace accepted")
+	}
+	if got := LoadKVStore(dir).All()["astra.offline.fresh.v1"]; got != v {
+		t.Fatalf("not persisted: %q", got)
+	}
+	if err := s.Set("astra.offline.fresh.v1", nil); err != nil || len(LoadKVStore(dir).All()) != 0 {
+		t.Fatal("delete failed")
+	}
+}
+
+func TestAstraServing(t *testing.T) {
+	srv, ts := newTestServer(t)
+	defer ts.Close()
+	get := func(path string, hdr map[string]string) (*http.Response, string) {
+		req, _ := http.NewRequest("GET", ts.URL+path, nil)
+		for k, v := range hdr {
+			req.Header.Set(k, v)
+		}
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		return resp, string(b)
+	}
+	resp, page := get("/astra/", nil)
+	if resp.StatusCode != 200 || !strings.Contains(page, srv.token) || !strings.Contains(page, "praxis-embed.js") {
+		t.Fatalf("workspace page not prepared: %d", resp.StatusCode)
+	}
+	if strings.Contains(page, "huggingface") || !strings.Contains(page, "connect-src 'self'") {
+		t.Error("workspace page may connect beyond this PC")
+	}
+	if i, j := strings.Index(page, "praxis-embed.js"), strings.Index(page, "js/app.js"); i < 0 || j < 0 || i > j {
+		t.Error("Praxis start-up script must run before the workspace's own scripts")
+	}
+	if resp.Header.Get("X-Frame-Options") != "SAMEORIGIN" || !strings.Contains(resp.Header.Get("Content-Security-Policy"), "frame-ancestors 'self'") {
+		t.Error("workspace must only be framed by Praxis")
+	}
+	if _, ai := get("/astra/js/local-ai.js", nil); !strings.Contains(ai, "Praxis works offline") {
+		t.Error("AI module not replaced by the offline stand-in")
+	}
+	if r, _ := get("/astra/js/local-llm.worker.js", nil); r.StatusCode != 404 {
+		t.Errorf("AI worker served: %d", r.StatusCode)
+	}
+	if r, js := get("/astra/js/app.js", nil); r.StatusCode != 200 || !strings.HasPrefix(r.Header.Get("Content-Type"), "text/javascript") || !strings.Contains(js, "window.AstraApp") {
+		t.Errorf("app.js: %d %s", r.StatusCode, r.Header.Get("Content-Type"))
+	}
+	pdf := "/astra/library/cisco/Cisco IP Phone 8841 8851 8861 Full User Guide (Horizon).pdf"
+	if r, _ := get(pdf, map[string]string{"Range": "bytes=0-99"}); r.StatusCode != 206 || r.Header.Get("Content-Type") != "application/pdf" {
+		t.Errorf("library PDF range request: %d %s", r.StatusCode, r.Header.Get("Content-Type"))
+	}
+	if r, _ := get("/astra/../config.json", nil); r.StatusCode == 200 {
+		t.Error("path outside the workspace served")
 	}
 }

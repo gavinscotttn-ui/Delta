@@ -41,6 +41,7 @@ type Server struct {
 	onConfigChanged func(old, new Config)
 
 	items map[string]*ItemStore // "notes", "templates"
+	kv    *KVStore              // Astra's workspace
 
 	audioMu  sync.Mutex
 	audioAt  time.Time
@@ -58,7 +59,8 @@ func newToken() string {
 func NewServer(eng *Engine, cfg *ConfigStore, plat Platform, log *Logger) *Server {
 	dir := filepath.Dir(cfg.path)
 	return &Server{eng: eng, cfg: cfg, plat: plat, log: log, token: newToken(),
-		items: map[string]*ItemStore{"notes": LoadItemStore(dir, "notes.json"), "templates": LoadItemStore(dir, "templates.json")}}
+		items: map[string]*ItemStore{"notes": LoadItemStore(dir, "notes.json"), "templates": LoadItemStore(dir, "templates.json")},
+		kv:    LoadKVStore(dir)}
 }
 
 func securityHeaders(w http.ResponseWriter) {
@@ -67,7 +69,7 @@ func securityHeaders(w http.ResponseWriter) {
 	h.Set("Referrer-Policy", "no-referrer")
 	h.Set("X-Frame-Options", "DENY")
 	h.Set("Cache-Control", "no-store")
-	h.Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+	h.Set("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
@@ -115,6 +117,8 @@ func (s *Server) Handler() http.Handler {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_, _ = w.Write([]byte(strings.Replace(barHTML, "__PRAXIS_TOKEN__", s.token, 1)))
 	})
+	mux.Handle("GET /astra/", s.astraHandler())
+	mux.Handle("GET /astra", http.RedirectHandler("/astra/", http.StatusMovedPermanently))
 	mux.HandleFunc("GET /logo.png", servePNG(logoPNG))
 	mux.HandleFunc("GET /favicon.ico", servePNG(iconPNG))
 	mux.HandleFunc("GET /icon.png", servePNG(iconPNG))
@@ -160,6 +164,7 @@ func (s *Server) Handler() http.Handler {
 		s.plat.OpenBar(s.URL() + "bar")
 		writeJSON(w, 200, map[string]bool{"ok": true})
 	})
+	s.kvRoutes(api)
 	api.HandleFunc("GET /api/log", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, s.log.Entries())
 	})

@@ -24,6 +24,18 @@ function seedAt(commit) {
   return JSON.parse(JSON.stringify(sandbox.AstraSeed));
 }
 
+/* These two tests read Astra's own git history. Inside Praxis, Astra was brought in without that history,
+   so they can only run in Astra's own repository. */
+const hasHistory = (() => {
+  try {
+    execFileSync("git", ["cat-file", "-e", `${BEFORE}^{commit}`], { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+})();
+const needsHistory = hasHistory ? {} : { skip: "needs Astra's git history, which is not in this repository" };
+
 let browser;
 before(async () => (browser = await chromium.launch()));
 after(async () => browser.close());
@@ -39,7 +51,7 @@ async function openWith(workspace) {
   return page;
 }
 
-test("unedited built-ins take the new wording; edited ones and personal fields are kept; retired ones go", async () => {
+test("unedited built-ins take the new wording; edited ones and personal fields are kept; retired ones go", needsHistory, async () => {
   const old = seedAt(BEFORE);
   const shortcodes = old.knowledge.find((k) => k.id === "kb-horizon-shortcodes");
   assert.match(shortcodes.body, /prints `\*78` for activate/, "the old version had the note");
@@ -74,7 +86,7 @@ test("unedited built-ins take the new wording; edited ones and personal fields a
   await page.close();
 });
 
-test("an edited retired guide is kept", async () => {
+test("an edited retired guide is kept", needsHistory, async () => {
   const old = seedAt(BEFORE);
   const retired = {
     ...old.knowledge.find((k) => k.id === "kb-gamma-official-guides"),
