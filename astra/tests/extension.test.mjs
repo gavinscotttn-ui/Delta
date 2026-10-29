@@ -401,11 +401,12 @@ const tabOf = (sw, file) =>
    times, and if it has gone idle, a message from one of Astra's pages wakes it. */
 async function worker(ctx) {
   const sw = await findWorker(ctx);
-  /* Under load the worker can be found before its script has finished running: wait until it has. */
-  await sw.evaluate(async () => {
-    for (let i = 0; i < 100 && typeof self.astraTriage !== "function"; i++)
-      await new Promise((r) => setTimeout(r, 50));
-  });
+  /* Under load the worker can be found before its script has finished running, or before its global scope is even
+     set up (setTimeout itself is missing then), so the waiting is done here and the worker is only asked. */
+  for (let i = 0; i < 100; i++) {
+    if (await sw.evaluate(() => typeof self.astraTriage === "function").catch(() => false)) break;
+    await new Promise((r) => setTimeout(r, 50));
+  }
   return sw;
 }
 
