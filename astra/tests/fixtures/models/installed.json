@@ -1,0 +1,16 @@
+[
+  {
+    "id": "tiny-lm",
+    "name": "Tiny test model (says one fixed sentence)",
+    "size": "1 KB",
+    "dtype": "fp32",
+    "webgpu": false
+  },
+  {
+    "id": "tiny-loop",
+    "name": "Tiny test model (never stops)",
+    "size": "1 KB",
+    "dtype": "fp32",
+    "webgpu": false
+  }
+]

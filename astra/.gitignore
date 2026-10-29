@@ -1,0 +1,12 @@
+node_modules
+*.zip
+dist/
+.DS_Store
+
+# downloaded language models (large) and the list of what is installed
+models/*/
+models/installed.json
+*.part
+
+# Python packages downloaded to check output; never part of Astra
+*.whl

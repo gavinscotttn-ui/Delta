@@ -1,0 +1,52 @@
+{
+  "manifest_version": 3,
+  "name": "Astra",
+  "version": "1.6.0",
+  "description": "Service-desk workspace on every new tab, Astra Lite in the toolbar and side panel, and Triage with Astra on the right-click menu.",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "action": {
+    "default_title": "Astra Lite",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "32": "assets/icon-32.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Q"
+      },
+      "description": "Open Astra Lite"
+    }
+  },
+  "icons": {
+    "16": "assets/icon-16.png",
+    "32": "assets/icon-32.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self'; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co; font-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+  },
+  "permissions": [
+    "unlimitedStorage",
+    "storage",
+    "contextMenus",
+    "activeTab",
+    "scripting",
+    "sidePanel"
+  ],
+  "optional_host_permissions": [
+    "https://*.zoho.eu/*",
+    "https://*.zoho.com/*"
+  ]
+}

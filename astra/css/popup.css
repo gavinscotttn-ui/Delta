@@ -1,0 +1,343 @@
+/* Astra Lite: the toolbar popup. Built on astra.css, so every theme and control looks the same as in Astra. */
+
+html.lite-root {
+  height: auto;
+  scroll-padding-top: 0;
+}
+
+body.lite {
+  width: 380px;
+  min-height: 0;
+  max-height: 600px;
+}
+
+/* In the side panel the page fills the panel, however wide it is dragged. */
+body.lite.panel {
+  width: auto;
+  max-height: none;
+}
+
+.lite-head-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.lite-head-actions .small-btn {
+  min-height: 30px;
+  padding: 0 11px;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.lite-head-actions .small-btn:hover {
+  background: var(--btn);
+}
+
+.lite-top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 0 14px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.lite-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 10px;
+}
+
+.lite-title {
+  margin: 0;
+  line-height: 0;
+}
+
+.lite-logo {
+  display: block;
+  width: auto;
+  height: 17px;
+}
+
+.lite-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--seg-track);
+  color: var(--muted);
+}
+
+.lite-search:focus-within {
+  border-color: var(--pink);
+  background: var(--panel);
+}
+
+:root[data-theme="contrast"] .lite-search {
+  border-color: var(--line-2);
+}
+
+.lite-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.lite-view {
+  padding: 4px 14px 14px;
+}
+
+.lite-section h2 {
+  margin: 16px 4px 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Systems: two columns of tiles, Alt + key on the right. */
+.lite-systems {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.lite-system {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--card-line);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.lite-system:hover,
+.lite-system:focus-visible {
+  background: var(--hover);
+}
+
+.lite-system span {
+  flex: 1;
+  min-width: 0;
+}
+
+.lite-system b,
+.lite-system small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lite-system b {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lite-system small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Results and pinned templates. */
+.lite-list {
+  border: 1px solid var(--card-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.lite-view > .lite-list {
+  margin-top: 10px;
+}
+
+.lite-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.lite-row:last-child {
+  border-bottom: 0;
+}
+
+button.lite-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.lite-row:hover,
+button.lite-row:focus-visible {
+  background: var(--hover);
+}
+
+/* The result Enter will act on: tinted, with a transparent outline that Windows contrast themes draw in. */
+.lite-row.active {
+  background: var(--accent-soft);
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+
+:root[data-theme="contrast"] .lite-row.active {
+  outline-color: var(--accent);
+}
+
+/* A quick line shows its words, up to three lines of them. */
+.lite-row.is-line .lite-main b {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 500;
+  white-space: pre-line;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.lite-type {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.lite-main b {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.lite-main small {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.lite-go {
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.lite-row.active .lite-go {
+  color: var(--accent);
+}
+
+.lite-empty {
+  padding: 18px 2px;
+  color: var(--muted);
+}
+
+.lite-empty p {
+  margin: 0 0 10px;
+}
+
+/* A reply or template being filled in. */
+.lite-panel {
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.lite-panel-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.lite-panel-head h2 {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Two details to a row even at popup width (astra.css stacks them on narrow screens). */
+.lite .lite-panel .fields.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lite-panel .segmented {
+  justify-self: start;
+}
+
+.lite-panel .hint {
+  margin: 0;
+}
+
+.lite-panel textarea {
+  width: 100%;
+  line-height: 1.45;
+}
+
+.lite-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.lite-actions .link-btn {
+  margin-left: auto;
+}
+
+.lite .toast {
+  bottom: 14px;
+}
+
+/* For the copy fallback, where the clipboard API is not available. */
+.offscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lite-panel-head [data-back] {
+  min-height: 30px;
+  padding: 0 8px 0 4px;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.lite-panel-head [data-back]:hover {
+  background: var(--btn);
+}
+
+.lite-due.soon {
+  color: var(--warning);
+}
+
+.lite-due.overdue {
+  color: var(--danger);
+  font-weight: 600;
+}

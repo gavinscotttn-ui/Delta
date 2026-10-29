@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self'; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co; font-src 'none'; object-src 'none'; frame-src 'none'; media-src 'none'; base-uri 'none'; form-action 'none'; worker-src 'self'">
+  <title>Astra</title>
+  <link rel="icon" href="assets/icon-32.png">
+  <link rel="stylesheet" href="css/astra.css">
+  <script src="js/theme.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar">
+      <div class="brand"><img alt="Astra" src="assets/astra-logo.png"></div>
+      <nav id="nav" aria-label="Main"></nav>
+      <div class="sidebar-foot">
+        <button data-action="keys">Keyboard shortcuts</button>
+        <button data-action="lock">Privacy screen</button>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <button class="small-btn mobile-menu" data-action="menu" aria-label="Open menu">Menu</button>
+        <h1 id="pageTitle">Home</h1>
+        <div class="spacer"></div>
+        <span class="status-save" id="saveState">Saved</span>
+        <button class="search-trigger" data-action="global-search" aria-keyshortcuts="Control+K"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="4.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m10.6 10.6 3.6 3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>Search</span><kbd>Ctrl K</kbd></button>
+      </header>
+      <div class="content" id="app"></div>
+    </main>
+  </div>
+
+  <div class="modal-layer" id="modalLayer"><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="privacy-screen" id="privacyScreen" role="dialog" aria-modal="true" aria-label="Screen hidden">
+    <div class="privacy-box">
+      <img alt="Astra" src="assets/astra-logo.png">
+      <p>Screen hidden. Your work is still here.</p>
+      <button data-action="unlock">Return to Astra</button>
+    </div>
+  </div>
+  <input class="hidden" id="importFile" type="file" accept="application/json,.json" tabindex="-1">
+
+  <script src="js/seed/registry.js"></script>
+  <script src="js/seed-fingerprint.js"></script>
+  <script src="js/seed/templates.js"></script>
+  <script src="js/seed/snippets.js"></script>
+  <script src="js/seed/workflows.js"></script>
+  <script src="js/seed/knowledge.js"></script>
+  <script src="js/seed/shortcuts.js"></script>
+  <script src="js/seed/profile.js"></script>
+  <script src="js/seed/baseline.js"></script>
+  <script src="js/seed/knowledge-horizon.js"></script>
+  <script src="js/seed/knowledge-horizon-admin.js"></script>
+  <script src="js/seed/knowledge-handsets.js"></script>
+  <script src="js/seed/knowledge-voxone.js"></script>
+  <script src="js/seed/knowledge-public.js"></script>
+  <script src="js/seed/knowledge-gamma.js"></script>
+  <script src="js/seed/knowledge-network-orders.js"></script>
+  <script src="js/seed/workflows-faults.js"></script>
+  <script src="js/seed/company.js"></script>
+  <script src="js/seed/history.js"></script>
+  <script src="js/library/docs.js"></script>
+  <script src="js/net-tools.js"></script>
+  <script src="js/uk-numbers.js"></script>
+  <script src="js/numbers.js"></script>
+  <script src="js/contract.js"></script>
+  <script src="js/qr.js"></script>
+  <script src="js/passwords.js"></script>
+  <script src="js/phonetic.js"></script>
+  <script src="js/faults.js"></script>
+  <script src="js/expand.js"></script>
+  <script src="js/docx.js"></script>
+  <script src="js/loa.js"></script>
+  <script src="js/ics.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/replies.js"></script>
+  <script src="js/kb-core.js"></script>
+  <script src="js/assistant-core.js"></script>
+  <script src="js/model-store.js"></script>
+  <script src="js/local-ai.js"></script>
+  <script src="js/ask-view.js"></script>
+  <script src="js/triage-core.js"></script>
+  <script src="js/triage-view.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

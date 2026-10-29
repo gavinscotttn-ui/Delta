@@ -1,0 +1,23 @@
+{
+  "note": "Models Astra knows how to install. Repositories are on Hugging Face (onnx-community). Sizes are approximate. The repository names and file layout are as published at the time of writing and are checked by the installer at run time.",
+  "models": [
+    {
+      "id": "qwen2.5-0.5b-instruct",
+      "name": "Qwen2.5 0.5B Instruct (small, fast)",
+      "repo": "onnx-community/Qwen2.5-0.5B-Instruct",
+      "licence": "Apache-2.0",
+      "size": "about 0.5 GB",
+      "dtypeGPU": "q4f16",
+      "dtypeCPU": "q4"
+    },
+    {
+      "id": "qwen2.5-1.5b-instruct",
+      "name": "Qwen2.5 1.5B Instruct (better answers, slower)",
+      "repo": "onnx-community/Qwen2.5-1.5B-Instruct",
+      "licence": "Apache-2.0",
+      "size": "about 1.2 GB",
+      "dtypeGPU": "q4f16",
+      "dtypeCPU": "q4"
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+ "version": "1.0",
+ "truncation": null,
+ "padding": null,
+ "added_tokens": [
+  {
+   "id": 0,
+   "content": "[UNK]",
+   "single_word": false,
+   "lstrip": false,
+   "rstrip": false,
+   "normalized": false,
+   "special": true
+  },
+  {
+   "id": 1,
+   "content": "<|im_start|>",
+   "single_word": false,
+   "lstrip": false,
+   "rstrip": false,
+   "normalized": false,
+   "special": true
+  },
+  {
+   "id": 2,
+   "content": "<|im_end|>",
+   "single_word": false,
+   "lstrip": false,
+   "rstrip": false,
+   "normalized": false,
+   "special": true
+  }
+ ],
+ "normalizer": null,
+ "pre_tokenizer": {
+  "type": "WhitespaceSplit"
+ },
+ "post_processor": null,
+ "decoder": null,
+ "model": {
+  "type": "WordPiece",
+  "unk_token": "[UNK]",
+  "continuing_subword_prefix": "##",
+  "max_input_chars_per_word": 100,
+  "vocab": {
+   "[UNK]": 0,
+   "<|im_start|>": 1,
+   "<|im_end|>": 2,
+   "system": 3,
+   "user": 4,
+   "assistant": 5,
+   "Tiny": 6,
+   "test": 7,
+   "model:": 8,
+   "plumbing": 9,
+   "works": 10,
+   "[1].": 11
+  }
+ }
+}

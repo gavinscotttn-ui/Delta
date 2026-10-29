@@ -1,0 +1,10 @@
+{
+  "tokenizer_class": "PreTrainedTokenizerFast",
+  "model_max_length": 512,
+  "unk_token": "[UNK]",
+  "bos_token": "<|im_start|>",
+  "eos_token": "<|im_end|>",
+  "pad_token": "[UNK]",
+  "clean_up_tokenization_spaces": false,
+  "chat_template": "{% for m in messages %}<|im_start|> {{ m['role'] }} {{ m['content'] }} <|im_end|> {% endfor %}{% if add_generation_prompt %}<|im_start|> assistant{% endif %}"
+}
