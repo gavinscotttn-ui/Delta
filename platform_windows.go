@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"sync"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -206,6 +207,52 @@ func openDeck(u string) {
 	_ = shellOpen(u, "", SW_SHOWNORMAL)
 }
 
+// OpenBar shows the floating button bar, kept above other windows.
+func (p *winPlatform) OpenBar(u string) {
+	go func() {
+		defer guard(p.app.log, "bar")
+		find := func() uintptr {
+			for _, w := range appWindows() {
+				if w.title == "Praxis Bar" && isBrowserExe(w.exe) {
+					return w.hwnd
+				}
+			}
+			return 0
+		}
+		h := find()
+		if h == 0 {
+			b := findBrowser()
+			if b == "" {
+				p.app.log.Warn("the button bar needs Microsoft Edge or Google Chrome")
+				return
+			}
+			if err := shellOpen(b, `--app=`+u+` --window-size=460,132`, SW_SHOWNORMAL); err != nil {
+				p.app.log.Warn("button bar: %v", err)
+				return
+			}
+			for i := 0; i < 80 && h == 0; i++ { // up to 8 s for a cold browser start
+				time.Sleep(100 * time.Millisecond)
+				h = find()
+			}
+			if h == 0 {
+				return
+			}
+			if mons, err := listMonitors(); err == nil {
+				for _, m := range mons {
+					if m.Primary {
+						var rc RECT
+						pGetWindowRect.Call(h, uintptr(unsafe.Pointer(&rc)))
+						w := rc.Right - rc.Left
+						pSetWindowPos.Call(h, 0, uintptr(m.work.Right-w-16), uintptr(m.work.Top+16), 0, 0, SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE)
+					}
+				}
+			}
+		}
+		// HWND_TOPMOST (-1): stays above other windows
+		pSetWindowPos.Call(h, ^uintptr(0), 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_SHOWWINDOW)
+	}()
+}
+
 func showError(msg string) { messageBox("Praxis", msg, MB_OK|MB_ICONERROR|MB_TOPMOST) }
 
 // ---------------- tray + message loop ----------------
@@ -216,6 +263,7 @@ const (
 	cmdPause
 	cmdIdentify
 	cmdQuit
+	cmdBar
 	cmdMacroBase = 100
 )
 
@@ -405,6 +453,7 @@ func (p *winPlatform) showMenu() {
 		pAppendMenuW.Call(m, flags, uintptr(id), uintptr(unsafe.Pointer(u16(text))))
 	}
 	add(MF_STRING, cmdOpen, "Open Praxis")
+	add(MF_STRING, cmdBar, "Button bar")
 	add(MF_SEPARATOR, 0, "")
 	n := 0
 	for i, mac := range cfg.Macros {
@@ -451,6 +500,8 @@ func (p *winPlatform) showMenu() {
 		go p.app.eng.SetPaused(!p.app.eng.Paused())
 	case c == cmdIdentify:
 		p.Identify()
+	case c == cmdBar:
+		p.OpenBar(p.app.srv.URL() + "bar")
 	case c == cmdQuit:
 		pPostQuitMessage.Call(0)
 	case c >= cmdMacroBase && c-cmdMacroBase < len(cfg.Macros):

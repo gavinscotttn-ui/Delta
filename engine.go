@@ -51,6 +51,7 @@ type Platform interface {
 	Notify(title, msg string)
 	Prewarm(macros []Macro)
 	SetTrayVisible(visible bool)
+	OpenBar(url string) // small always-on-top window of shortcut buttons
 }
 
 // ---- activity log ----

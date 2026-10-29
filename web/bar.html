@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="praxis-token" content="__PRAXIS_TOKEN__">
+<title>Praxis Bar</title>
+<link rel="icon" href="/icon.png">
+<style>
+:root{--bg:#FFFFFF;--text:#111114;--sub:#86868B;--line:#ECECEF;--hover:#F4F4F6;--accent:#D7036A;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0B0B0D;--text:#F2F2F5;--sub:#8E8E93;--line:#232327;--hover:#1B1B1F;--accent:#FF3D97;color-scheme:dark}}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font:12px/1.3 "Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;user-select:none;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.bar{display:flex;gap:4px;padding:6px;height:100%;overflow-x:auto;align-items:stretch}
+.b{flex:0 0 72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:9px;padding:6px 4px;color:var(--text)}
+.b:hover{background:var(--hover)}
+.b:active{transform:translateY(1px)}
+.b svg{width:20px;height:20px;fill:none;stroke:var(--c,currentColor);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.b .l{font-weight:600;color:var(--c);font-size:15px;line-height:20px}
+.b span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.b.on{background:var(--hover);box-shadow:inset 0 -2px 0 var(--accent)}
+.err{color:var(--sub);padding:10px}
+</style>
+</head>
+<body>
+<div class="bar" id="bar" role="toolbar" aria-label="Praxis buttons"></div>
+<script>
+"use strict";
+const TOKEN = document.querySelector('meta[name="praxis-token"]').content;
+const P = {
+  bolt:'M13 2 4 14h7l-1 8 9-12h-7z', 'eye-off':'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM3 3l18 18',
+  'volume-off':'M11 5 6 9H3v6h3l5 4zM16 9l5 6M21 9l-5 6', volume:'M11 5 6 9H3v6h3l5 4zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13',
+  'mic-off':'M9 5a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0zM5 11a7 7 0 0 0 14 0M12 18v3M3 3l18 18', play:'M7 4l13 8-13 8z',
+  lock:'M7 11h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2zM8 11V7a4 4 0 0 1 8 0v4',
+  briefcase:'M5 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zM9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2',
+  moon:'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z', monitor:'M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8 21h8M12 17v4',
+  keyboard:'M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zM6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10',
+  globe:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18',
+  mail:'M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM3 7l9 6 9-6',
+  phone:'M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z',
+  chart:'M5 20V11M12 20V5M19 20v-6', return:'M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3',
+  star:'M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z',
+};
+const api = (m, p) => fetch(p, {method:m, headers:{'X-Praxis-Token':TOKEN}}).then(r=>{ if (!r.ok) throw new Error(r.status); return r.json(); });
+const bar = document.getElementById('bar');
+let macros = [], sig = '';
+function draw(active){
+  const s = JSON.stringify([macros.map(m=>[m.id,m.name,m.icon,m.color]), active]);
+  if (s === sig) return; sig = s;
+  bar.replaceChildren(...macros.map(m=>{
+    const b = document.createElement('button');
+    b.className = 'b'+(active.includes(m.id)?' on':''); b.title = m.name+(m.hotkey?' ('+m.hotkey+')':'');
+    b.style.setProperty('--c', m.color);
+    if (P[m.icon]){
+      const ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns,'svg'), path=document.createElementNS(ns,'path');
+      svg.setAttribute('viewBox','0 0 24 24'); svg.setAttribute('aria-hidden','true'); path.setAttribute('d',P[m.icon]); svg.append(path); b.append(svg);
+    } else { const l=document.createElement('span'); l.className='l'; l.textContent=(m.name||'?').trim().charAt(0).toUpperCase(); b.append(l); }
+    const n = document.createElement('span'); n.textContent = m.name; b.append(n);
+    b.onclick = ()=>api('POST','/api/run/'+encodeURIComponent(m.id)).then(()=>setTimeout(tick,250)).catch(()=>{});
+    return b;
+  }));
+}
+async function load(){
+  try{ const st = await api('GET','/api/state'); macros = st.config.macros; draw(st.active||[]); }
+  catch{ bar.innerHTML = '<p class="err">Praxis is not running.</p>'; }
+}
+async function tick(){ try{ const st = await api('GET','/api/status'); draw(st.active||[]); }catch{} }
+load();
+setInterval(()=>{ if (!document.hidden) tick(); }, 3000);
+setInterval(()=>{ if (!document.hidden) load(); }, 30000); // pick up edits made in the main window
+</script>
+</body>
+</html>

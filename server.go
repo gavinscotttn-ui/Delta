@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -19,6 +20,9 @@ var indexHTML string
 
 //go:embed web/remote.html
 var remoteHTML string
+
+//go:embed web/bar.html
+var barHTML string
 
 //go:embed assets/logo.png
 var logoPNG []byte
@@ -37,6 +41,8 @@ type Server struct {
 	port  int
 
 	onConfigChanged func(old, new Config)
+
+	items map[string]*ItemStore // "notes", "templates"
 
 	audioMu  sync.Mutex
 	audioAt  time.Time
@@ -62,7 +68,9 @@ func newToken() string {
 }
 
 func NewServer(eng *Engine, cfg *ConfigStore, plat Platform, log *Logger) *Server {
+	dir := filepath.Dir(cfg.path)
 	return &Server{eng: eng, cfg: cfg, plat: plat, log: log, token: newToken(),
+		items:    map[string]*ItemStore{"notes": LoadItemStore(dir, "notes.json"), "templates": LoadItemStore(dir, "templates.json")},
 		sessions: map[string]time.Time{}, failures: map[string]*failState{}}
 }
 
@@ -115,6 +123,11 @@ func (s *Server) Handler() http.Handler {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_, _ = w.Write([]byte(strings.Replace(indexHTML, "__PRAXIS_TOKEN__", s.token, 1)))
 	})
+	mux.HandleFunc("GET /bar", func(w http.ResponseWriter, r *http.Request) {
+		securityHeaders(w)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = w.Write([]byte(strings.Replace(barHTML, "__PRAXIS_TOKEN__", s.token, 1)))
+	})
 	mux.HandleFunc("GET /logo.png", servePNG(logoPNG))
 	mux.HandleFunc("GET /favicon.ico", servePNG(iconPNG))
 	mux.HandleFunc("GET /icon.png", servePNG(iconPNG))
@@ -129,6 +142,36 @@ func (s *Server) Handler() http.Handler {
 			"active":  s.eng.ActiveMacros(),
 			"audio":   s.audio(false),
 		})
+	})
+	for _, kind := range []string{"notes", "templates"} {
+		store := s.items[kind]
+		api.HandleFunc("GET /api/"+kind, func(w http.ResponseWriter, r *http.Request) {
+			writeJSON(w, 200, store.List())
+		})
+		api.HandleFunc("PUT /api/"+kind, func(w http.ResponseWriter, r *http.Request) {
+			var it Item
+			if err := readJSON(r, &it); err != nil {
+				writeErr(w, 400, "bad request")
+				return
+			}
+			saved, err := store.Put(it)
+			if err != nil {
+				writeErr(w, 400, err.Error())
+				return
+			}
+			writeJSON(w, 200, saved)
+		})
+		api.HandleFunc("DELETE /api/"+kind+"/{id}", func(w http.ResponseWriter, r *http.Request) {
+			if err := store.Delete(r.PathValue("id")); err != nil {
+				writeErr(w, 500, err.Error())
+				return
+			}
+			writeJSON(w, 200, map[string]bool{"ok": true})
+		})
+	}
+	api.HandleFunc("POST /api/bar", func(w http.ResponseWriter, r *http.Request) {
+		s.plat.OpenBar(s.URL() + "bar")
+		writeJSON(w, 200, map[string]bool{"ok": true})
 	})
 	api.HandleFunc("GET /api/log", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 200, s.log.Entries())

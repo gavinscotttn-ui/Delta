@@ -187,3 +187,30 @@ func TestRemoteLockout(t *testing.T) {
 		t.Errorf("public client allowed: %d", w.Code)
 	}
 }
+
+func TestItemStore(t *testing.T) {
+	dir := t.TempDir()
+	s := LoadItemStore(dir, "notes.json")
+	a, err := s.Put(Item{Title: "first", Body: "hello"})
+	if err != nil || a.ID == "" || a.Updated == 0 {
+		t.Fatalf("put: %+v %v", a, err)
+	}
+	b, _ := s.Put(Item{Title: "second"})
+	a.Body = "edited"
+	if _, err := s.Put(a); err != nil {
+		t.Fatal(err)
+	}
+	got := LoadItemStore(dir, "notes.json").List() // reload from disk
+	if len(got) != 2 || got[0].ID != a.ID || got[0].Body != "edited" || got[1].ID != b.ID {
+		t.Fatalf("order or persistence wrong: %+v", got)
+	}
+	if err := s.Delete(b.ID); err != nil || len(s.List()) != 1 {
+		t.Fatal("delete failed")
+	}
+	if _, err := s.Put(Item{ID: "../x"}); err == nil {
+		t.Error("bad id accepted")
+	}
+	if _, err := s.Put(Item{Body: strings.Repeat("x", maxItemBody+1)}); err == nil {
+		t.Error("oversized body accepted")
+	}
+}
