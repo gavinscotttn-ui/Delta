@@ -337,6 +337,7 @@ func platformInit(app *App) error {
 		pSetProcessDpiAwarenessCtx.Call(^uintptr(3)) // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 (-4)
 	}
 	p.uiThread, _, _ = pGetCurrentThreadId.Call()
+	ledgerInit(app.dir, app.log)
 	if err := p.setupWindow(); err != nil {
 		return fmt.Errorf("could not create the tray window: %w", err)
 	}

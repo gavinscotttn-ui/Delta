@@ -18,9 +18,6 @@ import (
 //go:embed web/index.html
 var indexHTML string
 
-//go:embed web/remote.html
-var remoteHTML string
-
 //go:embed web/bar.html
 var barHTML string
 
@@ -48,16 +45,6 @@ type Server struct {
 	audioMu  sync.Mutex
 	audioAt  time.Time
 	audioVal AudioState
-
-	remoteMu  sync.Mutex
-	remoteSrv *http.Server
-	sessions  map[string]time.Time
-	failures  map[string]*failState
-}
-
-type failState struct {
-	count int
-	until time.Time
 }
 
 func newToken() string {
@@ -71,8 +58,7 @@ func newToken() string {
 func NewServer(eng *Engine, cfg *ConfigStore, plat Platform, log *Logger) *Server {
 	dir := filepath.Dir(cfg.path)
 	return &Server{eng: eng, cfg: cfg, plat: plat, log: log, token: newToken(),
-		items:    map[string]*ItemStore{"notes": LoadItemStore(dir, "notes.json"), "templates": LoadItemStore(dir, "templates.json")},
-		sessions: map[string]time.Time{}, failures: map[string]*failState{}}
+		items: map[string]*ItemStore{"notes": LoadItemStore(dir, "notes.json"), "templates": LoadItemStore(dir, "templates.json")}}
 }
 
 func securityHeaders(w http.ResponseWriter) {
@@ -209,22 +195,6 @@ func (s *Server) Handler() http.Handler {
 		s.eng.SetPaused(body.Paused)
 		writeJSON(w, 200, map[string]bool{"paused": s.eng.Paused()})
 	})
-	api.HandleFunc("POST /api/pin", func(w http.ResponseWriter, r *http.Request) {
-		var body struct {
-			PIN string `json:"pin"`
-		}
-		if err := readJSON(r, &body); err != nil {
-			writeErr(w, 400, "bad request")
-			return
-		}
-		if err := s.cfg.SetPIN(body.PIN); err != nil {
-			writeErr(w, 400, err.Error())
-			return
-		}
-		s.dropSessions()
-		s.log.Info("remote deck PIN changed")
-		writeJSON(w, 200, map[string]bool{"ok": true})
-	})
 	api.HandleFunc("POST /api/defaults", func(w http.ResponseWriter, r *http.Request) {
 		d := defaultConfig()
 		cur := s.cfg.Get()
@@ -245,9 +215,15 @@ func servePNG(b []byte) http.HandlerFunc {
 	}
 }
 
-// hostCheck defeats DNS-rebinding: only loopback host names are accepted.
+// hostCheck keeps the deck strictly local: the caller must be this PC, the Host
+// must be a loopback name (defeats DNS rebinding), and a request carrying an
+// Origin must come from the deck itself (no other web page can drive it).
 func (s *Server) hostCheck(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if ip, _, err := net.SplitHostPort(r.RemoteAddr); err != nil || !net.ParseIP(ip).IsLoopback() {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
 		host := r.Host
 		if h, _, err := net.SplitHostPort(host); err == nil {
 			host = h
@@ -255,6 +231,12 @@ func (s *Server) hostCheck(next http.Handler) http.Handler {
 		if host != "127.0.0.1" && host != "localhost" {
 			http.Error(w, "forbidden host", http.StatusForbidden)
 			return
+		}
+		if o := r.Header.Get("Origin"); o != "" && o != "null" {
+			if o != "http://"+r.Host && o != fmt.Sprintf("http://127.0.0.1:%d", s.port) && o != fmt.Sprintf("http://localhost:%d", s.port) {
+				http.Error(w, "forbidden origin", http.StatusForbidden)
+				return
+			}
 		}
 		next.ServeHTTP(w, r)
 	})
@@ -296,7 +278,6 @@ func (s *Server) handleState(w http.ResponseWriter, r *http.Request) {
 		"audio":    s.audio(true),
 		"monitors": mons,
 		"log":      s.log.Entries(),
-		"remote":   s.remoteInfo(cfg),
 	}
 	if merr != nil {
 		resp["monitorError"] = merr.Error()
@@ -374,227 +355,4 @@ func (s *Server) audio(fresh bool) AudioState {
 		s.audioVal, s.audioAt = s.plat.Audio(), time.Now()
 	}
 	return s.audioVal
-}
-
-// ---------------- remote (LAN) deck ----------------
-
-func (s *Server) remoteInfo(cfg Config) map[string]any {
-	s.remoteMu.Lock()
-	running := s.remoteSrv != nil
-	s.remoteMu.Unlock()
-	var urls []string
-	if running {
-		for _, ip := range lanIPs() {
-			urls = append(urls, fmt.Sprintf("http://%s:%d/", ip, cfg.Settings.Remote.Port))
-		}
-	}
-	return map[string]any{"running": running, "urls": urls}
-}
-
-func lanIPs() []string {
-	var out []string
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		return nil
-	}
-	for _, a := range addrs {
-		if ipn, ok := a.(*net.IPNet); ok && ipn.IP.To4() != nil && !ipn.IP.IsLoopback() && ipn.IP.IsPrivate() {
-			out = append(out, ipn.IP.String())
-		}
-	}
-	return out
-}
-
-// SyncRemote starts/stops the LAN deck to match settings.
-func (s *Server) SyncRemote(cfg Config) {
-	s.remoteMu.Lock()
-	defer s.remoteMu.Unlock()
-	want := cfg.Settings.Remote.Enabled && cfg.Settings.Remote.PINHash != ""
-	if s.remoteSrv != nil {
-		if want && s.remoteSrv.Addr == fmt.Sprintf(":%d", cfg.Settings.Remote.Port) {
-			return
-		}
-		_ = s.remoteSrv.Close()
-		s.remoteSrv = nil
-		s.log.Info("remote deck stopped")
-	}
-	if !want {
-		return
-	}
-	srv := &http.Server{
-		Addr:              fmt.Sprintf(":%d", cfg.Settings.Remote.Port),
-		Handler:           s.remoteHandler(),
-		ReadHeaderTimeout: 10 * time.Second,
-		ReadTimeout:       15 * time.Second,
-		WriteTimeout:      15 * time.Second,
-	}
-	ln, err := net.Listen("tcp", srv.Addr)
-	if err != nil {
-		s.log.Error("remote deck could not start on port %d: %v", cfg.Settings.Remote.Port, err)
-		return
-	}
-	s.remoteSrv = srv
-	go func() { _ = srv.Serve(ln) }()
-	s.log.Info("remote deck listening on port %d", cfg.Settings.Remote.Port)
-}
-
-func (s *Server) dropSessions() {
-	s.remoteMu.Lock()
-	s.sessions = map[string]time.Time{}
-	s.remoteMu.Unlock()
-}
-
-const remoteCookie = "praxis_remote"
-
-func (s *Server) remoteAuthed(r *http.Request) bool {
-	c, err := r.Cookie(remoteCookie)
-	if err != nil {
-		return false
-	}
-	s.remoteMu.Lock()
-	defer s.remoteMu.Unlock()
-	exp, ok := s.sessions[c.Value]
-	if !ok || time.Now().After(exp) {
-		delete(s.sessions, c.Value)
-		return false
-	}
-	return true
-}
-
-func clientIP(r *http.Request) string {
-	h, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		return r.RemoteAddr
-	}
-	return h
-}
-
-// allowRemoteClient restricts the LAN deck to private/loopback addresses.
-func allowRemoteClient(r *http.Request) bool {
-	ip := net.ParseIP(clientIP(r))
-	return ip != nil && (ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast())
-}
-
-func (s *Server) remoteHandler() http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		securityHeaders(w)
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		_, _ = w.Write([]byte(remoteHTML))
-	})
-	mux.HandleFunc("GET /logo.png", servePNG(logoPNG))
-	mux.HandleFunc("GET /icon.png", servePNG(iconPNG))
-	mux.HandleFunc("POST /r/login", s.remoteLogin)
-	mux.HandleFunc("GET /r/macros", s.remoteOnly(func(w http.ResponseWriter, r *http.Request) {
-		cfg := s.cfg.Get()
-		type tile struct {
-			ID, Name, Icon, Color string
-			Active                bool
-		}
-		active := map[string]bool{}
-		for _, id := range s.eng.ActiveMacros() {
-			active[id] = true
-		}
-		out := []tile{}
-		for _, m := range cfg.Macros {
-			if m.Remote {
-				out = append(out, tile{m.ID, m.Name, m.Icon, m.Color, active[m.ID]})
-			}
-		}
-		writeJSON(w, 200, map[string]any{"macros": out, "audio": s.audio(false)})
-	}))
-	mux.HandleFunc("POST /r/run/{id}", s.remoteOnly(func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
-		cfg := s.cfg.Get()
-		m := cfg.Find(id)
-		if m == nil || !m.Remote {
-			writeErr(w, 404, "unknown macro")
-			return
-		}
-		s.runAsync(w, id, "remote "+clientIP(r))
-	}))
-	mux.HandleFunc("POST /r/restore", s.remoteOnly(func(w http.ResponseWriter, r *http.Request) {
-		go s.eng.Restore("remote " + clientIP(r))
-		writeJSON(w, 200, map[string]bool{"ok": true})
-	}))
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !allowRemoteClient(r) {
-			http.Error(w, "forbidden", http.StatusForbidden)
-			return
-		}
-		mux.ServeHTTP(w, r)
-	})
-}
-
-func (s *Server) remoteOnly(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		securityHeaders(w)
-		// custom header forces a CORS preflight for cross-site requests (CSRF defence)
-		if r.Header.Get("X-Praxis-Remote") != "1" || !s.remoteAuthed(r) {
-			writeErr(w, 401, "unauthorised")
-			return
-		}
-		h(w, r)
-	}
-}
-
-func (s *Server) remoteLogin(w http.ResponseWriter, r *http.Request) {
-	securityHeaders(w)
-	if r.Header.Get("X-Praxis-Remote") != "1" {
-		writeErr(w, 401, "unauthorised")
-		return
-	}
-	ip := clientIP(r)
-	s.remoteMu.Lock()
-	f := s.failures[ip]
-	if f != nil && time.Now().Before(f.until) {
-		s.remoteMu.Unlock()
-		writeErr(w, 429, "too many attempts; try again in a few minutes")
-		return
-	}
-	s.remoteMu.Unlock()
-
-	var body struct {
-		PIN string `json:"pin"`
-	}
-	if err := readJSON(r, &body); err != nil || len(body.PIN) > 64 {
-		writeErr(w, 400, "bad request")
-		return
-	}
-	cfg := s.cfg.Get()
-	if !checkPIN(cfg.Settings.Remote.PINHash, body.PIN) {
-		s.remoteMu.Lock()
-		if f == nil {
-			if len(s.failures) > 1000 {
-				s.failures = map[string]*failState{}
-			}
-			f = &failState{}
-			s.failures[ip] = f
-		}
-		f.count++
-		if f.count >= 5 {
-			f.until = time.Now().Add(5 * time.Minute)
-			f.count = 0
-			s.log.Warn("remote deck: %s locked out after repeated wrong PINs", ip)
-		}
-		s.remoteMu.Unlock()
-		time.Sleep(400 * time.Millisecond)
-		writeErr(w, 401, "wrong PIN")
-		return
-	}
-	tok := newToken()
-	s.remoteMu.Lock()
-	delete(s.failures, ip)
-	now := time.Now()
-	for k, exp := range s.sessions {
-		if now.After(exp) {
-			delete(s.sessions, k)
-		}
-	}
-	s.sessions[tok] = now.Add(12 * time.Hour)
-	s.remoteMu.Unlock()
-	http.SetCookie(w, &http.Cookie{Name: remoteCookie, Value: tok, Path: "/", HttpOnly: true,
-		SameSite: http.SameSiteStrictMode, MaxAge: 12 * 3600})
-	s.log.Info("remote deck: %s signed in", ip)
-	writeJSON(w, 200, map[string]bool{"ok": true})
 }

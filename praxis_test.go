@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -47,14 +46,13 @@ func TestDefaultConfigValid(t *testing.T) {
 
 func TestNormalizeRejects(t *testing.T) {
 	cases := map[string]func(*Config){
-		"dup hotkey":   func(c *Config) { c.Macros[1].Hotkey = "pause" },
-		"bad type":     func(c *Config) { c.Macros[0].Actions[0].Type = "format_c" },
-		"bad url":      func(c *Config) { c.Macros[0].Actions = []Action{{Type: "open_url", Target: "javascript:alert(1)"}} },
-		"vol range":    func(c *Config) { c.Macros[0].Actions = []Action{{Type: "set_volume", Value: 101}} },
-		"monitor":      func(c *Config) { c.Macros[0].Actions[4].Monitors = []int{0} },
-		"remote nopin": func(c *Config) { c.Settings.Remote.Enabled = true },
-		"same ports":   func(c *Config) { c.Settings.Remote.Port = c.Settings.Port },
-		"dup id":       func(c *Config) { c.Macros[1].ID = c.Macros[0].ID },
+		"dup hotkey": func(c *Config) { c.Macros[1].Hotkey = "pause" },
+		"bad type":   func(c *Config) { c.Macros[0].Actions[0].Type = "format_c" },
+		"bad url":    func(c *Config) { c.Macros[0].Actions = []Action{{Type: "open_url", Target: "javascript:alert(1)"}} },
+		"vol range":  func(c *Config) { c.Macros[0].Actions = []Action{{Type: "set_volume", Value: 101}} },
+		"monitor":    func(c *Config) { c.Macros[0].Actions[4].Monitors = []int{0} },
+		"bad port":   func(c *Config) { c.Settings.Port = 80 },
+		"dup id":     func(c *Config) { c.Macros[1].ID = c.Macros[0].ID },
 	}
 	for name, mut := range cases {
 		c := defaultConfig()
@@ -82,13 +80,6 @@ func TestMatchFromTarget(t *testing.T) {
 	}
 	if got := matchFromTarget(`https://x`); got != "" {
 		t.Errorf("got %q", got)
-	}
-}
-
-func TestPIN(t *testing.T) {
-	h := hashPIN("123456")
-	if !checkPIN(h, "123456") || checkPIN(h, "123457") || checkPIN("junk", "123456") {
-		t.Fatal("PIN check wrong")
 	}
 }
 
@@ -141,50 +132,17 @@ func TestAPIGuards(t *testing.T) {
 	if c := do("POST", "/api/run/does-not-exist", "127.0.0.1", srv.token, ""); c != 404 {
 		t.Errorf("unknown macro: %d", c)
 	}
-	// index page carries the token, API never leaks the PIN hash
-	if err := srv.cfg.SetPIN("abcdef"); err != nil {
+	// another web page cannot drive the deck, even with the token
+	req, _ := http.NewRequest("POST", ts.URL+"/api/restore", nil)
+	req.Header.Set("X-Praxis-Token", srv.token)
+	req.Header.Set("Origin", "https://evil.example")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
 		t.Fatal(err)
 	}
-	req, _ := http.NewRequest("GET", ts.URL+"/api/state", nil)
-	req.Header.Set("X-Praxis-Token", srv.token)
-	resp, _ := http.DefaultClient.Do(req)
-	var st struct {
-		Config Config `json:"config"`
-	}
-	_ = json.NewDecoder(resp.Body).Decode(&st)
 	resp.Body.Close()
-	if st.Config.Settings.Remote.PINHash != "" || !st.Config.Settings.Remote.HasPIN {
-		t.Error("PIN hash leaked or hasPin missing")
-	}
-}
-
-func TestRemoteLockout(t *testing.T) {
-	srv, _ := newTestServer(t)
-	_ = srv.cfg.SetPIN("135790")
-	h := srv.remoteHandler()
-	try := func(pin string) int {
-		req := httptest.NewRequest("POST", "/r/login", strings.NewReader(`{"pin":"`+pin+`"}`))
-		req.RemoteAddr = "192.168.1.50:5555"
-		req.Header.Set("X-Praxis-Remote", "1")
-		w := httptest.NewRecorder()
-		h.ServeHTTP(w, req)
-		return w.Code
-	}
-	for i := 0; i < 5; i++ {
-		if c := try("000000"); c != 401 {
-			t.Fatalf("attempt %d: %d", i, c)
-		}
-	}
-	if c := try("135790"); c != 429 {
-		t.Errorf("expected lockout, got %d", c)
-	}
-	// public addresses are refused outright
-	req := httptest.NewRequest("GET", "/", nil)
-	req.RemoteAddr = "8.8.8.8:1"
-	w := httptest.NewRecorder()
-	h.ServeHTTP(w, req)
-	if w.Code != 403 {
-		t.Errorf("public client allowed: %d", w.Code)
+	if resp.StatusCode != 403 {
+		t.Errorf("foreign origin: %d", resp.StatusCode)
 	}
 }
 

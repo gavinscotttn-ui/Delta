@@ -87,7 +87,6 @@ func main() {
 		}
 	}()
 	writeDeckURL(dir, app.srv.URL())
-	app.srv.SyncRemote(c)
 	log.Info("started")
 
 	runMain(app) // blocks until quit (tray loop on Windows)
@@ -105,14 +104,12 @@ func (a *App) configChanged(old, new Config) {
 		a.plat.SetTrayVisible(!new.Settings.HideTray)
 	}
 	a.log.SetPersist(new.Settings.KeepLog)
-	a.srv.SyncRemote(new)
 }
 
 func (a *App) shutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	_ = a.http.Shutdown(ctx)
-	a.srv.SyncRemote(Config{})
 	_ = os.Remove(filepath.Join(a.dir, "deck.url"))
 	if st, err := os.Stat(filepath.Join(a.dir, "crash.log")); err == nil && st.Size() == 0 {
 		_ = os.Remove(filepath.Join(a.dir, "crash.log"))

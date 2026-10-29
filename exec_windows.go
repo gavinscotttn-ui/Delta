@@ -240,6 +240,7 @@ func (f *winFrame) stash(h uintptr, hide bool) {
 		if ok {
 			f.minimized = append(f.minimized, savedWin{h, wp})
 		}
+		ledgerAdd(h) // recorded first, so a crash after this point can't strand it
 		showWindow(h, SW_HIDE)
 		return
 	}
@@ -368,6 +369,7 @@ func (f *winFrame) unstash(h uintptr) (WINDOWPLACEMENT, bool) {
 		if x == h {
 			f.hidden = append(f.hidden[:i], f.hidden[i+1:]...)
 			showWindow(h, SW_SHOWNOACTIVATE)
+			ledgerRemove(h)
 			break
 		}
 	}
@@ -415,6 +417,7 @@ func (p *winPlatform) Undo(frame any) {
 		if isWindow(h) {
 			showWindow(h, SW_SHOWNOACTIVATE)
 		}
+		ledgerRemove(h)
 	}
 	for i := len(f.minimized) - 1; i >= 0; i-- {
 		s := f.minimized[i]

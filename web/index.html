@@ -592,7 +592,7 @@ function renderSwitch(){
   if (!m){
     card.replaceChildren(h('div',{class:'row'}, h('span',{class:'k'},'Switch was deleted.'),
       h('button',{class:'btn', onclick:async()=>{ const next = structuredClone(cfg);
-        next.macros.unshift({id:'switch',name:'Switch',icon:'monitor',color:'#D7036A',hotkey:'',toggle:true,undoable:true,remote:true,actions:[{type:'mute'}]});
+        next.macros.unshift({id:'switch',name:'Switch',icon:'monitor',color:'#D7036A',hotkey:'',toggle:true,undoable:true,actions:[{type:'mute'}]});
         try{ await saveConfig(next); }catch(e){ toast(e.message,true); } }}, 'Bring it back')));
     $('#swFoot').textContent=''; return;
   }
@@ -780,7 +780,7 @@ $('#pkCancel').onclick = ()=>$('#pk').close();
 
 // ---------- shortcut editor ----------
 function openEditor(index, preset){
-  const m = preset || (index==null ? {id:'',name:'',icon:'bolt',color:'#1C1917',hotkey:'',toggle:false,undoable:false,remote:true,actions:[]} : structuredClone(cfg.macros[index]));
+  const m = preset || (index==null ? {id:'',name:'',icon:'bolt',color:'#1C1917',hotkey:'',toggle:false,undoable:false,actions:[]} : structuredClone(cfg.macros[index]));
   ed = {index, m};
   $('#edT').textContent = index==null ? 'New button' : 'Edit button';
   drawEditor(); $('#ed').showModal();
@@ -804,7 +804,7 @@ function drawEditor(){
       h('div',{class:'row'}, h('span',{class:'k'},'Key'), hotkeyChip(m.hotkey, v=>{ m.hotkey=v; })),
       check('Press again to undo', m.toggle, v=>{ m.toggle=v; }),
       check('Undo with Return', m.undoable, v=>{ m.undoable=v; }),
-      check('Show on phone', m.remote, v=>{ m.remote=v; })),
+      ),
     h('div',{class:'sec'}, h('h2',{},'Icon')),
     h('div',{class:'card'},
       h('div',{class:'icons'}, ...TILE_ICONS.map(n=>h('button',{type:'button','aria-label':n,'aria-pressed':String(m.icon===n), onclick:()=>{ m.icon=n; drawEditor(); }}, icon(n)))),
@@ -898,9 +898,7 @@ matchMedia('(prefers-color-scheme: light)').addEventListener('change', ()=>setLo
 function grp(...rows){ return h('div',{class:'card'}, ...rows); }
 function arow(label, color, fn){ return h('button',{class:'row btnrow',type:'button',style:{color}, onclick:fn}, label); }
 function drawSettings(){
-  const s = S.config.settings, r = s.remote;
-  const addr = !S.remote.running ? 'Off' : (S.remote.urls||[]).join('  ') || 'Port '+r.port;
-  const pin = h('input',{type:'password',placeholder:r.hasPin?'Change PIN':'Choose a PIN',autocomplete:'new-password',maxlength:32,'aria-label':'PIN'});
+  const s = S.config.settings;
   $('#stBody').replaceChildren(
     h('div',{class:'sec'}, h('h2',{},'Appearance')),
     grp(h('div',{class:'row'}, h('span',{class:'k'},'Theme'), seg([['system','Match computer'],['light','Light'],['dark','Dark'],['contrast','High contrast']], look().theme||'system', v=>setLook({theme:v}))),
@@ -917,11 +915,6 @@ function drawSettings(){
     grp(check('Tray icon', !s.hideTray, v=>setSetting(x=>x.hideTray=!v), 'Off: open Praxis again from its file to show this window.'),
         check('Notifications', s.notifyOnRun, v=>setSetting(x=>x.notifyOnRun=v)),
         check('Keep history on disk', s.keepLog, v=>setSetting(x=>x.keepLog=v), 'Off: history lives in memory and is gone when Praxis closes.')),
-    h('div',{class:'sec'}, h('h2',{},'Phone')),
-    grp(h('div',{class:'row'}, h('span',{class:'k',style:{flex:'none',width:'120px'}},'PIN'), h('div',{class:'field'}, pin, h('button',{class:'btn',onclick:async()=>{
-          try{ await api('POST','/api/pin',{pin:pin.value}); pin.value=''; toast('PIN saved'); await refresh(); drawSettings(); }catch(e){ toast(e.message,true); } }},'Save'))),
-        check('Use from phone', r.enabled, v=>setSetting(x=>x.remote.enabled=v), 'Same Wi-Fi only. Five wrong PINs locks out for five minutes. Not encrypted.'),
-        h('div',{class:'row'}, h('span',{class:'k'},'Address'), h('span',{class:'v',style:{userSelect:'all'}}, addr))),
     h('div',{class:'sec'}, h('h2',{},'Buttons')),
     grp(arow('Export', '', exportCfg), arow('Import', '', ()=>imp.click()), arow('Reset to originals', 'var(--danger)', resetCfg)),
     h('div',{class:'sec'}, h('h2',{},'Activity')),

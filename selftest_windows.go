@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -114,6 +115,37 @@ func runSelfTest() int {
 			pass("website opened in its own browser window and maximised")
 		}
 		thePlatform.Undo(frame)
+	}
+
+	// a window hidden mid-switch comes back after a simulated crash
+	if len(mons) > 0 {
+		ldir, _ := os.MkdirTemp("", "praxis-ledger")
+		defer os.RemoveAll(ldir)
+		ledgerInit(ldir, app.log)
+		m := &Macro{ID: "hide", Name: "selftest hide", Undoable: true, Actions: []Action{
+			{Type: "fill_screens", Target: "notepad.exe", Match: "notepad.exe", Monitors: []int{1}, Mode: "maximize", Launch: true, Timeout: 15000},
+			{Type: "minimize_apps", Match: "notepad.exe", Mode: "hide"},
+		}}
+		frame, err := thePlatform.Run(m, func() {})
+		f, _ := frame.(*winFrame)
+		switch {
+		case err != nil || f == nil || len(f.hidden) == 0:
+			warn("hide test could not hide notepad: %v", err)
+		default:
+			h := f.hidden[0]
+			_, statErr := os.Stat(filepath.Join(ldir, "hidden.json"))
+			if v, _, _ := pIsWindowVisible.Call(h); v != 0 || statErr != nil {
+				fail("window not hidden or not recorded (visible=%d, ledger=%v)", v, statErr)
+			} else {
+				ledgerInit(ldir, app.log) // what the next start does
+				if v, _, _ := pIsWindowVisible.Call(h); v == 0 {
+					fail("hidden window was not brought back after a simulated crash")
+				} else {
+					pass("hidden window recorded and brought back after a simulated crash")
+				}
+			}
+			pPostMessageW.Call(h, WM_CLOSE, 0, 0)
+		}
 	}
 
 	// window enumeration

@@ -108,18 +108,10 @@ func windowPID(h uintptr) uint32 {
 	return pid
 }
 
-var (
-	exeCacheMu sync.Mutex
-	exeCache   = map[uint32]string{}
-)
-
+// processPath asks Windows for a process's exe path. It is looked up fresh on every
+// enumeration: Windows reuses process IDs, so a long-lived cache could attribute a
+// window to the wrong program and hide the wrong thing.
 func processPath(pid uint32) string {
-	exeCacheMu.Lock()
-	if p, ok := exeCache[pid]; ok {
-		exeCacheMu.Unlock()
-		return p
-	}
-	exeCacheMu.Unlock()
 	h, _, _ := pOpenProcess.Call(PROCESS_QUERY_LIMITED_INFORMATION, 0, uintptr(pid))
 	if h == 0 {
 		return ""
@@ -130,14 +122,7 @@ func processPath(pid uint32) string {
 	if r, _, _ := pQueryFullProcessImageNameW.Call(h, 0, uintptr(unsafe.Pointer(&buf[0])), uintptr(unsafe.Pointer(&size))); r == 0 {
 		return ""
 	}
-	p := syscall.UTF16ToString(buf[:size])
-	exeCacheMu.Lock()
-	if len(exeCache) > 2000 {
-		exeCache = map[uint32]string{}
-	}
-	exeCache[pid] = p
-	exeCacheMu.Unlock()
-	return p
+	return syscall.UTF16ToString(buf[:size])
 }
 
 func isCloaked(h uintptr) bool {
@@ -177,20 +162,27 @@ func isAppWindow(h uintptr, includeHidden bool) bool {
 	return windowText(h) != ""
 }
 
-func describe(h uintptr) winRef {
+// describe fills in a window's title and program. paths is shared within one
+// enumeration only, so several windows of one app cost one lookup.
+func describe(h uintptr, paths map[uint32]string) winRef {
 	pid := windowPID(h)
-	p := processPath(pid)
+	p, ok := paths[pid]
+	if !ok {
+		p = processPath(pid)
+		paths[pid] = p
+	}
 	return winRef{hwnd: h, title: windowText(h), exe: filepath.Base(p), path: p, pid: pid}
 }
 
 // appWindows lists visible app windows in Z-order (topmost first), excluding Praxis itself.
 func appWindows() []winRef {
 	var out []winRef
+	paths := map[uint32]string{}
 	for _, h := range allTopWindows() {
 		if !isAppWindow(h, false) {
 			continue
 		}
-		w := describe(h)
+		w := describe(h, paths)
 		if w.pid == ownPID {
 			continue
 		}

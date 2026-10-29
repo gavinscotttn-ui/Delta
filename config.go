@@ -2,8 +2,6 @@ package main
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
-	"crypto/subtle"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -26,22 +24,14 @@ type Config struct {
 }
 
 type Settings struct {
-	RunAtStartup     bool           `json:"runAtStartup"`
-	OpenDeckOnLaunch bool           `json:"openDeckOnLaunch"`
-	NotifyOnRun      bool           `json:"notifyOnRun"`
-	HideTray         bool           `json:"hideTray"` // discreet: no tray icon; relaunch the exe to open the deck
-	KeepLog          bool           `json:"keepLog"`  // write activity history to disk (off: memory only)
-	Name             string         `json:"name"`     // fills {name} in templates
-	PrewarmApps      bool           `json:"prewarmApps"`
-	Port             int            `json:"port"`
-	Remote           RemoteSettings `json:"remote"`
-}
-
-type RemoteSettings struct {
-	Enabled bool   `json:"enabled"`
-	Port    int    `json:"port"`
-	PINHash string `json:"pinHash,omitempty"` // salt:sha256(salt+pin), never sent to the UI
-	HasPIN  bool   `json:"hasPin"`            // UI-facing only
+	RunAtStartup     bool   `json:"runAtStartup"`
+	OpenDeckOnLaunch bool   `json:"openDeckOnLaunch"`
+	NotifyOnRun      bool   `json:"notifyOnRun"`
+	HideTray         bool   `json:"hideTray"` // discreet: no tray icon; relaunch the exe to open the deck
+	KeepLog          bool   `json:"keepLog"`  // write activity history to disk (off: memory only)
+	Name             string `json:"name"`     // fills {name} in templates
+	PrewarmApps      bool   `json:"prewarmApps"`
+	Port             int    `json:"port"`
 }
 
 type Macro struct {
@@ -52,7 +42,6 @@ type Macro struct {
 	Hotkey   string   `json:"hotkey"`
 	Toggle   bool     `json:"toggle"`   // pressing again restores
 	Undoable bool     `json:"undoable"` // recorded so "Restore" can revert it
-	Remote   bool     `json:"remote"`   // shown on the phone/remote deck
 	Actions  []Action `json:"actions"`
 }
 
@@ -90,7 +79,6 @@ const (
 	maxTextLen    = 4000
 	maxWaitMs     = 60000
 	defaultPort   = 47800
-	defaultRPort  = 47801
 	defaultTimout = 6000
 )
 
@@ -100,12 +88,11 @@ func defaultConfig() Config {
 		Settings: Settings{
 			OpenDeckOnLaunch: true,
 			Port:             defaultPort,
-			Remote:           RemoteSettings{Port: defaultRPort},
 		},
 		Macros: []Macro{
 			{
 				ID: "switch", Name: "Switch", Icon: "monitor", Color: "#D7036A", Hotkey: "Pause",
-				Toggle: true, Undoable: true, Remote: true,
+				Toggle: true, Undoable: true,
 				Actions: []Action{
 					{Type: "mute"},
 					{Type: "media", Target: "play_pause"},
@@ -115,23 +102,23 @@ func defaultConfig() Config {
 				},
 			},
 			{
-				ID: "return", Name: "Return", Icon: "return", Color: "#34C759", Hotkey: "Shift+Pause", Remote: true,
+				ID: "return", Name: "Return", Icon: "return", Color: "#34C759", Hotkey: "Shift+Pause",
 				Actions: []Action{{Type: "restore"}},
 			},
 			{
-				ID: "mute", Name: "Sound", Icon: "volume-off", Color: "#007AFF", Hotkey: "Ctrl+Alt+M", Remote: true,
+				ID: "mute", Name: "Sound", Icon: "volume-off", Color: "#007AFF", Hotkey: "Ctrl+Alt+M",
 				Actions: []Action{{Type: "toggle_mute"}},
 			},
 			{
-				ID: "mic", Name: "Microphone", Icon: "mic-off", Color: "#5856D6", Hotkey: "Ctrl+Alt+N", Remote: true,
+				ID: "mic", Name: "Microphone", Icon: "mic-off", Color: "#5856D6", Hotkey: "Ctrl+Alt+N",
 				Actions: []Action{{Type: "mic_toggle"}},
 			},
 			{
-				ID: "playpause", Name: "Play / Pause", Icon: "play", Color: "#FF9500", Remote: true,
+				ID: "playpause", Name: "Play / Pause", Icon: "play", Color: "#FF9500",
 				Actions: []Action{{Type: "media", Target: "play_pause"}},
 			},
 			{
-				ID: "lock", Name: "Lock", Icon: "lock", Color: "#8E8E93", Hotkey: "Ctrl+Alt+L", Remote: true,
+				ID: "lock", Name: "Lock", Icon: "lock", Color: "#8E8E93", Hotkey: "Ctrl+Alt+L",
 				Actions: []Action{{Type: "mute"}, {Type: "mic_mute"}, {Type: "lock"}},
 			},
 		},
@@ -158,7 +145,6 @@ func (c *Config) Normalize() error {
 		c.Version = configVersion
 	}
 	s := &c.Settings
-	s.Remote.HasPIN = s.Remote.PINHash != ""
 	s.Name = strings.TrimSpace(s.Name)
 	if err := checkLen("name", s.Name, 80); err != nil {
 		return err
@@ -166,17 +152,8 @@ func (c *Config) Normalize() error {
 	if s.Port == 0 {
 		s.Port = defaultPort
 	}
-	if s.Remote.Port == 0 {
-		s.Remote.Port = defaultRPort
-	}
-	if s.Port < 1024 || s.Port > 65535 || s.Remote.Port < 1024 || s.Remote.Port > 65535 {
-		return errors.New("ports must be between 1024 and 65535")
-	}
-	if s.Port == s.Remote.Port {
-		return errors.New("the deck port and remote deck port must differ")
-	}
-	if s.Remote.Enabled && s.Remote.PINHash == "" {
-		return errors.New("set a remote PIN before enabling the remote deck")
+	if s.Port < 1024 || s.Port > 65535 {
+		return errors.New("the port must be between 1024 and 65535")
 	}
 	if len(c.Macros) > maxMacros {
 		return fmt.Errorf("too many macros (max %d)", maxMacros)
@@ -399,29 +376,6 @@ func validColor(s string) bool {
 	return err == nil
 }
 
-// ---- PIN hashing (salted SHA-256; adequate for a rate-limited LAN PIN) ----
-
-func hashPIN(pin string) string {
-	salt := make([]byte, 16)
-	_, _ = rand.Read(salt)
-	sum := sha256.Sum256(append(salt, []byte(pin)...))
-	return hex.EncodeToString(salt) + ":" + hex.EncodeToString(sum[:])
-}
-
-func checkPIN(stored, pin string) bool {
-	parts := strings.SplitN(stored, ":", 2)
-	if len(parts) != 2 {
-		return false
-	}
-	salt, err1 := hex.DecodeString(parts[0])
-	want, err2 := hex.DecodeString(parts[1])
-	if err1 != nil || err2 != nil {
-		return false
-	}
-	sum := sha256.Sum256(append(salt, []byte(pin)...))
-	return subtle.ConstantTimeCompare(sum[:], want) == 1
-}
-
 // ---- Store ----
 
 type ConfigStore struct {
@@ -491,7 +445,6 @@ func cloneConfig(c Config) Config {
 func (s *ConfigStore) Replace(c Config) (Config, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	c.Settings.Remote.PINHash = s.cfg.Settings.Remote.PINHash
 	if err := c.Normalize(); err != nil {
 		return Config{}, err
 	}
@@ -502,21 +455,6 @@ func (s *ConfigStore) Replace(c Config) (Config, error) {
 		return Config{}, err
 	}
 	return cloneConfig(c), nil
-}
-
-func (s *ConfigStore) SetPIN(pin string) error {
-	if len(pin) < 6 || len(pin) > 32 {
-		return errors.New("PIN must be 6-32 characters")
-	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	old := s.cfg.Settings.Remote.PINHash
-	s.cfg.Settings.Remote.PINHash = hashPIN(pin)
-	if err := s.saveLocked(); err != nil {
-		s.cfg.Settings.Remote.PINHash = old
-		return err
-	}
-	return nil
 }
 
 func (s *ConfigStore) saveLocked() error {
@@ -534,8 +472,6 @@ func (s *ConfigStore) saveLocked() error {
 // Public strips secrets for the UI.
 func (c Config) Public() Config {
 	out := cloneConfig(c)
-	out.Settings.Remote.HasPIN = out.Settings.Remote.PINHash != ""
-	out.Settings.Remote.PINHash = ""
 	return out
 }
 

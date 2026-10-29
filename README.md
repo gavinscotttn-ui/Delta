@@ -33,7 +33,7 @@ Settings and macros live in `%APPDATA%\Praxis\config.json`; the activity log is 
   if needed, and maximises (or fully covers) one per screen.
 - **Keep ready:** optionally starts the Switch app minimised at boot so switching is instant.
 - **Audio:** mute, unmute or toggle speakers; set the volume or step it up/down; mute, unmute or toggle the
-  microphone; media keys. Live volume slider and mute buttons in the deck header.
+  microphone; media keys. Volume slider and mute buttons in the sidebar.
 - **Windows:** minimise or *hide* the active window or matching apps (by `name.exe` or title words such as
   `Netflix`); minimise all; focus an app; politely close an app.
 - **Launch:** apps, files, shortcuts, websites, hidden commands.
@@ -42,16 +42,17 @@ Settings and macros live in `%APPDATA%\Praxis\config.json`; the activity log is 
 - **Shortcuts:** tiles you can reorder, a key recorder, line icons and colours, steps you can reorder or switch
   off, duplicate, import/export. Keys already taken by another app are flagged.
 - **Tray menu:** run any shortcut, Return, pause keys, identify screens, quit.
-- **Phone (opt-in):** run shortcuts from your phone on the same Wi-Fi.
 - **Start with Windows** (per-user, no admin).
 
 ## Security notes
 
-- The deck listens on `127.0.0.1` only, needs a random per-launch token on every API call, and rejects
-  non-loopback `Host` headers (DNS-rebinding protection). Other websites cannot drive it.
-- The phone remote deck is **off by default**. When enabled it needs a 6+ character PIN (stored salted and
-  hashed), only accepts private-network clients, locks an address out for 5 minutes after 5 wrong PINs, and
-  only shows macros you have ticked "Show on phone deck". It is plain HTTP, so only use it on networks you trust.
+- **Offline.** Praxis makes no internet connections and accepts none from other devices. Its window is drawn by
+  your browser talking to Praxis on `127.0.0.1`, which never leaves this PC. Requests must come from this PC,
+  carry a random per-launch token, use a loopback host name, and must not come from another web page. The pages
+  themselves are locked so they cannot load anything from outside. Websites only open when you ask for them,
+  in your own browser.
+- Hidden windows are recorded as they are hidden, so if Praxis is ever killed mid-switch they reappear the next
+  time it starts.
 - "Run a command" steps run with your own permissions. Only import macro files you trust.
 - Quitting Praxis while switched returns everything first, so no window is left hidden.
 - Discreet is not invisible: Praxis still appears in Task Manager under its file name. It deliberately does not hide
