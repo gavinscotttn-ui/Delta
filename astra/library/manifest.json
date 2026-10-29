@@ -1,0 +1,1276 @@
+{
+  "categories": [
+    "Horizon",
+    "Collaborate & Apps",
+    "Yealink",
+    "Polycom",
+    "Cisco",
+    "Voxone",
+    "Webex",
+    "Integrator & Reporting",
+    "Inbound & SIP Trunks",
+    "iPECS & Porting",
+    "Routers & Broadband",
+    "Company"
+  ],
+  "documents": [
+    {
+      "id": "horizon-admin-guide",
+      "title": "Horizon Administrator User Guide v4.6",
+      "category": "Horizon",
+      "kind": "Admin guide",
+      "file": "horizon/Horizon Administrator User Guide v4.6.pdf",
+      "summary": "Gamma's complete guide to running a Horizon company: users, departments, hunt groups, call queues, auto attendants, schedules, voicemail, hot desking, call recording, soft clients, call centre options, statistics and short codes.",
+      "tags": [
+        "horizon",
+        "gamma",
+        "admin",
+        "users",
+        "hunt group",
+        "call queue",
+        "auto attendant",
+        "voicemail",
+        "schedules",
+        "short codes"
+      ]
+    },
+    {
+      "id": "horizon-features-guide",
+      "title": "Horizon Features Guide v4.3",
+      "category": "Horizon",
+      "kind": "Feature guide",
+      "file": "horizon/Horizon Features Guide v4.3.pdf",
+      "original": "horizon/Horizon Features Guide v4.3.docx",
+      "summary": "Feature-by-feature setup and behaviour: shortcodes, call forwarding (including Unreachable), DND, call recording and retention, call transfer behaviour, known behaviours, Health Check, hunt groups, voice portal and voicemail.",
+      "tags": [
+        "horizon",
+        "gamma",
+        "features",
+        "shortcodes",
+        "call forwarding",
+        "dnd",
+        "known behaviours",
+        "health check",
+        "call recording",
+        "voicemail"
+      ]
+    },
+    {
+      "id": "horizon-call-centre-guide",
+      "title": "Horizon Call Centre Administrators Guide v5.1",
+      "category": "Horizon",
+      "kind": "Admin guide",
+      "file": "horizon/Horizon Call Centre Administrators Guide v5.1.pdf",
+      "original": "horizon/Horizon Call Centre Administrators Guide v5.1.docx",
+      "summary": "Creating and customising a Horizon call centre: agents and supervisors, overflow, stranded and bounced calls, announcements, agent states, handsets and the call centre clients.",
+      "tags": [
+        "horizon",
+        "call centre",
+        "agents",
+        "supervisors",
+        "overflow",
+        "stranded calls",
+        "bounced calls",
+        "acd"
+      ]
+    },
+    {
+      "id": "horizon-tech-support",
+      "title": "Horizon Technical Support Guide v4.4",
+      "category": "Horizon",
+      "kind": "Troubleshooting",
+      "file": "horizon/Horizon Technical Support Guide v4.4.pdf",
+      "summary": "Gamma's fault-finding guide: Health Check, raising a fault, handset profile rules and recovery, returns, SIP ALG, call quality, call connection, Wireshark traces, soft clients, Collaborate, call recording and the Horizon portal.",
+      "tags": [
+        "horizon",
+        "gamma",
+        "troubleshooting",
+        "fault",
+        "health check",
+        "sip alg",
+        "call quality",
+        "profile rule",
+        "recovery",
+        "wireshark",
+        "collaborate",
+        "call recording"
+      ]
+    },
+    {
+      "id": "yealink-w73p-guide",
+      "title": "Yealink W73P User Guide",
+      "category": "Yealink",
+      "kind": "User guide",
+      "file": "yealink/Yealink W73P User Guide.pdf",
+      "summary": "Gamma's guide to the W73P cordless (W70B base, W73H handset): registering and deregistering handsets, calls, transfers, conferencing, voicemail, settings and repeater mode.",
+      "tags": [
+        "yealink",
+        "w73p",
+        "w73h",
+        "w70b",
+        "dect",
+        "cordless",
+        "registration",
+        "repeater"
+      ]
+    },
+    {
+      "id": "yealink-cordless-guide",
+      "title": "Yealink Cordless User Guide (Telecom Networks)",
+      "category": "Yealink",
+      "kind": "User guide",
+      "file": "yealink/Yealink Cordless User Guide (Telecom Networks).pdf",
+      "summary": "The W73P cordless user guide in Telecom Networks branding: registering handsets, calls, transfers, conferencing, voicemail and settings.",
+      "tags": [
+        "yealink",
+        "w73p",
+        "cordless",
+        "dect",
+        "customer guide"
+      ]
+    },
+    {
+      "id": "yealink-w73p-setup",
+      "title": "Yealink W73P Setup Guide (Customer)",
+      "category": "Yealink",
+      "kind": "Quick guide",
+      "file": "yealink/Yealink W73P Setup Guide (Customer).pdf",
+      "summary": "Two-page plug-and-play guide for customers: what's in the box, connecting the base (PoE or power adapter), powering the handset, testing and a short troubleshooting table.",
+      "tags": [
+        "yealink",
+        "w73p",
+        "setup",
+        "install",
+        "poe",
+        "troubleshooting",
+        "customer guide"
+      ]
+    },
+    {
+      "id": "yealink-t46u",
+      "title": "Yealink T46U Quick Guide",
+      "category": "Yealink",
+      "kind": "Quick guide",
+      "file": "yealink/Yealink T46U Quick Guide.pdf",
+      "summary": "Keys and features of the T46U desk phone, with how to place, answer, hold, transfer (warm, blind, voicemail) and park calls.",
+      "tags": [
+        "yealink",
+        "t46u",
+        "desk phone",
+        "transfer",
+        "park",
+        "hold"
+      ]
+    },
+    {
+      "id": "yealink-provisioning-steps",
+      "title": "Yealink Provisioning Steps",
+      "category": "Yealink",
+      "kind": "Process",
+      "file": "yealink/Yealink Provisioning Steps.pdf",
+      "summary": "Step-by-step reprovisioning of a Yealink handset using its profile rule, what to do if the handset's web page will not load, and when to raise an RMA.",
+      "tags": [
+        "yealink",
+        "provisioning",
+        "profile rule",
+        "auto provision",
+        "factory reset",
+        "rma"
+      ]
+    },
+    {
+      "id": "yealink-profile-rules",
+      "title": "Yealink Profile Rules and Recovery Process",
+      "category": "Yealink",
+      "kind": "Process",
+      "file": "yealink/Yealink Profile Rules and Recovery Process.pdf",
+      "summary": "Finding the handset IP, logging in and entering the correct Auto Provision profile rule for W52P, W73P, T46U, AX83H, T73W, T74W and T87W.",
+      "tags": [
+        "yealink",
+        "profile rule",
+        "auto provision",
+        "w52p",
+        "w73p",
+        "t46u",
+        "ax83h",
+        "t73w",
+        "t74w",
+        "t87w"
+      ]
+    },
+    {
+      "id": "yealink-ax83h-wifi",
+      "title": "Yealink AX83H - Change Wi-Fi Network",
+      "category": "Yealink",
+      "kind": "Quick guide",
+      "file": "yealink/Yealink AX83H - Change Wi-Fi Network.pdf",
+      "original": "yealink/Yealink AX83H - Change Wi-Fi Network.docx",
+      "summary": "How to change the Wi-Fi network on a Yealink AX83H handset.",
+      "tags": [
+        "yealink",
+        "ax83h",
+        "wifi",
+        "wi-fi",
+        "wireless"
+      ]
+    },
+    {
+      "id": "polycom-vvx450",
+      "title": "Polycom VVX450 User Guide",
+      "category": "Polycom",
+      "kind": "User guide",
+      "file": "polycom/Polycom VVX450 User Guide.pdf",
+      "original": "polycom/Polycom VVX450 User Guide.docx",
+      "summary": "Horizon-branded VVX450 guide: keys and icons, placing, answering, holding and transferring calls, rejecting calls, DND, call forwarding, conferences and the contact directory.",
+      "tags": [
+        "polycom",
+        "vvx450",
+        "vvx",
+        "desk phone",
+        "transfer",
+        "dnd",
+        "conference"
+      ]
+    },
+    {
+      "id": "voxone-firewall",
+      "title": "Voxone Firewall and Network Guide",
+      "category": "Voxone",
+      "kind": "Reference",
+      "file": "voxone/Voxone Firewall and Network Guide.pdf",
+      "summary": "Firewall rules for Voxone: the 80.83.208.0/20 network, TTL, disabling SIP ALG, provisioning and redirect servers by manufacturer, and the protocols and ports used (SIP, RTP, DNS, NTP, HTTP/S, TFTP, WSS).",
+      "tags": [
+        "voxone",
+        "firewall",
+        "network",
+        "sip alg",
+        "ports",
+        "provisioning",
+        "rtp",
+        "sip",
+        "dns",
+        "ntp"
+      ]
+    },
+    {
+      "id": "voxone-help-1",
+      "title": "Voxone Help Articles (VOIP Unlimited), part 1",
+      "category": "Voxone",
+      "kind": "Guide",
+      "file": "voxone/Voxone Help Articles (VOIP Unlimited) part 1.pdf",
+      "transcript": "voxone-help-1.txt",
+      "summary": "VOIP Unlimited's own help pages for the Voxone portal and apps: Block a caller at queue or user level; Generate and schedule statistics; Assign a profile to a DSS key; Access Insights; Import contacts in bulk; Create audio prompts for PBX services; Create a shared extension; Create PBX services and an IVR; Configure a queue; Save Voxone contacts on a mobile; Manage address-book visibility; Add and assign a handset; Scope user permissions; Use co-listening; Create and edit a contact; Build groups and assign them to devices.",
+      "tags": [
+        "voxone",
+        "voip unlimited",
+        "help"
+      ]
+    },
+    {
+      "id": "voxone-help-2",
+      "title": "Voxone Help Articles (VOIP Unlimited), part 2",
+      "category": "Voxone",
+      "kind": "Guide",
+      "file": "voxone/Voxone Help Articles (VOIP Unlimited) part 2.pdf",
+      "transcript": "voxone-help-2.txt",
+      "summary": "VOIP Unlimited's own help pages for the Voxone portal and apps: Understand additional user services; Set user profiles; Use feature codes; Distinguish the three Teams integrations; Plan and verify Teams Direct Routing; Add a grey-list exception; Create a shared extension; Add an extra ringing speaker; Check system requirements; Use keyboard shortcuts; Create speed dials and user call routings; Onboard a user into the app; Use the VoIP Unlimited Voxone network specification; Connect Pipedrive contact lookup.",
+      "tags": [
+        "voxone",
+        "voip unlimited",
+        "help"
+      ]
+    },
+    {
+      "id": "voxone-help-3",
+      "title": "Voxone Help Articles (VOIP Unlimited), part 3",
+      "category": "Voxone",
+      "kind": "Guide",
+      "file": "voxone/Voxone Help Articles (VOIP Unlimited) part 3.pdf",
+      "transcript": "voxone-help-3.txt",
+      "summary": "VOIP Unlimited's own help pages for the Voxone portal and apps: Distinguish the three Teams integrations; Install the Voxone Teams companion app; Give access to a shared mailbox; Set the default call method; Use feature codes; Synchronise Teams presence; Use co-listening; Create a Voxone user; Remove a user without confusing it with a service cease; Choose a queue strategy; Connect HubSpot; Forward an unassigned number; Enable and control call recording; Find, download or delete recordings; Collect keypad input with Advanced Nodes; Factory reset a Yealink handset.",
+      "tags": [
+        "voxone",
+        "voip unlimited",
+        "help"
+      ]
+    },
+    {
+      "id": "voxone-pc-app",
+      "title": "Voxone PC App User Guide (May 2025)",
+      "category": "Voxone",
+      "kind": "User guide",
+      "file": "voxone/Voxone PC App User Guide (May 2025).pdf",
+      "original": "voxone/Voxone PC App User Guide (May 2025).docx",
+      "summary": "Logging in to the Voxone desktop app, calling from the directory or by number, and using hold, transfer and mute.",
+      "tags": [
+        "voxone",
+        "pc app",
+        "desktop",
+        "softphone",
+        "transfer",
+        "hold"
+      ]
+    },
+    {
+      "id": "voxone-android",
+      "title": "Voxone Mobile Android User Guide (May 2025)",
+      "category": "Voxone",
+      "kind": "User guide",
+      "file": "voxone/Voxone Mobile Android User Guide (May 2025).pdf",
+      "original": "voxone/Voxone Mobile Android User Guide (May 2025).docx",
+      "summary": "Using the Voxone Android app: login, finding contacts, placing calls, hold, mute, and blind versus attended transfer.",
+      "tags": [
+        "voxone",
+        "android",
+        "mobile",
+        "app",
+        "transfer",
+        "attended",
+        "blind"
+      ]
+    },
+    {
+      "id": "webex-basic-guide",
+      "title": "Webex App Basic Guide",
+      "category": "Webex",
+      "kind": "User guide",
+      "file": "webex/Webex App Basic Guide.pdf",
+      "original": "webex/Webex App Basic Guide.docx",
+      "summary": "Customer onboarding for the Webex app: resetting the password (16 characters), signing in, calling, messaging, contacts, and busy / Do Not Disturb settings.",
+      "tags": [
+        "webex",
+        "onboarding",
+        "password",
+        "app",
+        "contacts",
+        "dnd",
+        "customer guide"
+      ]
+    },
+    {
+      "id": "webex-android-calls",
+      "title": "Webex - Incoming Calls Not Appearing on Android",
+      "category": "Webex",
+      "kind": "Troubleshooting",
+      "file": "webex/Webex - Incoming Calls Not Appearing on Android.pdf",
+      "summary": "Seven ordered steps for Android: update and restart, permissions and notifications, Webex notification settings, background battery use (including Samsung), Do Not Disturb, clear cache, clear storage.",
+      "tags": [
+        "webex",
+        "android",
+        "incoming calls",
+        "not ringing",
+        "notifications",
+        "battery",
+        "samsung",
+        "do not disturb"
+      ]
+    },
+    {
+      "id": "webex-iphone-calls",
+      "title": "Webex - Incoming Calls Not Appearing on iPhone",
+      "category": "Webex",
+      "kind": "Troubleshooting",
+      "file": "webex/Webex - Incoming Calls Not Appearing on iPhone.pdf",
+      "summary": "Seven ordered steps for iPhone: update and restart, permissions and notifications, Webex notification settings, Background App Refresh and Low Power Mode, Focus, restart Webex, reinstall.",
+      "tags": [
+        "webex",
+        "iphone",
+        "ios",
+        "incoming calls",
+        "not ringing",
+        "notifications",
+        "focus",
+        "low power mode"
+      ]
+    },
+    {
+      "id": "webex-gamma-elearning",
+      "title": "Webex for Gamma eLearning Guide v1.2",
+      "category": "Webex",
+      "kind": "Training",
+      "file": "webex/Webex for Gamma eLearning Guide v1.2.pdf",
+      "summary": "How to become Webex for Gamma accredited through the Gamma Academy, what each course covers, and how provisioning access is granted.",
+      "tags": [
+        "webex",
+        "gamma",
+        "academy",
+        "accreditation",
+        "provisioning",
+        "training",
+        "control hub"
+      ]
+    },
+    {
+      "id": "webex-gamma-overview",
+      "title": "Webex for Gamma Product Overview",
+      "category": "Webex",
+      "kind": "Brochure",
+      "file": "webex/Webex for Gamma Product Overview.pdf",
+      "transcript": "webex-gamma-overview.txt",
+      "summary": "Product brochure: what Webex for Gamma is, why choose it, features, and a comparison of the Common Area, Voice, Calling, Customer Assist, Suite and Meetings subscriptions.",
+      "tags": [
+        "webex",
+        "gamma",
+        "brochure",
+        "subscriptions",
+        "common area",
+        "webex voice",
+        "webex calling",
+        "customer assist",
+        "suite",
+        "meetings"
+      ]
+    },
+    {
+      "id": "ipecs-order-guide",
+      "title": "iPECS Portal Order Placing Guide",
+      "category": "iPECS & Porting",
+      "kind": "Process",
+      "file": "ipecs-porting/iPECS Portal Order Placing Guide.pdf",
+      "original": "ipecs-porting/iPECS Portal Order Placing Guide.docx",
+      "summary": "Creating a customer on the iPECS portal and placing the order: admin account, site, numbers, licences, SIP trunks, devices, shipping and final confirmation.",
+      "tags": [
+        "ipecs",
+        "order",
+        "portal",
+        "licence",
+        "sip trunk",
+        "1020i",
+        "ddi",
+        "lg-ericsson"
+      ]
+    },
+    {
+      "id": "pragma-port-guide",
+      "title": "Pragma Hub Number Port Guide",
+      "category": "iPECS & Porting",
+      "kind": "Process",
+      "file": "ipecs-porting/Pragma Hub Number Port Guide.pdf",
+      "original": "ipecs-porting/Pragma Hub Number Port Guide.docx",
+      "summary": "Placing a number port on the Pragma Hub in eight steps, after the customer exists on the iPECS portal.",
+      "tags": [
+        "pragma",
+        "number port",
+        "porting",
+        "ipecs",
+        "port date",
+        "trunk"
+      ]
+    },
+    {
+      "id": "tplink-w9970-firmware",
+      "title": "TP-Link W9970 Firmware Update",
+      "category": "Routers & Broadband",
+      "kind": "Process",
+      "file": "routers-broadband/TP-Link W9970 Firmware Update.pdf",
+      "summary": "Updating the firmware on a TP-Link W9970 router from its web interface at 192.168.1.1.",
+      "tags": [
+        "tp-link",
+        "w9970",
+        "router",
+        "firmware",
+        "upgrade",
+        "192.168.1.1"
+      ]
+    },
+    {
+      "id": "sogea-zyxel-connect",
+      "title": "Sogea Zyxel Router Connection Guide",
+      "category": "Routers & Broadband",
+      "kind": "Process",
+      "file": "routers-broadband/Sogea Zyxel Router Connection Guide.pdf",
+      "original": "routers-broadband/Sogea Zyxel Router Connection Guide.docx",
+      "summary": "Connecting a Zyxel router to the NTE / BT socket for a SoGEA line: power, grey DSL cable to the modem port, lights and LAN ports.",
+      "tags": [
+        "sogea",
+        "zyxel",
+        "router",
+        "nte",
+        "bt socket",
+        "dsl",
+        "install"
+      ]
+    },
+    {
+      "id": "install-types",
+      "title": "Broadband Installation Types (Openreach Business Standard)",
+      "category": "Routers & Broadband",
+      "kind": "Reference",
+      "file": "routers-broadband/Broadband Installation Types (Openreach Business Standard).pdf",
+      "transcript": "broadband-install-types.txt",
+      "summary": "Managed, Premium and Advanced fibre broadband installs: what each includes, how orders auto-correct or fall into delay, and when an install type is needed.",
+      "tags": [
+        "broadband",
+        "openreach",
+        "install",
+        "managed install",
+        "premium install",
+        "advanced install",
+        "fttp",
+        "nte"
+      ]
+    },
+    {
+      "id": "product-range",
+      "title": "Our Product Range 2026",
+      "category": "Company",
+      "kind": "Brochure",
+      "file": "company/Our Product Range 2026.pdf",
+      "summary": "Telecom Networks' 2026 range: cloud phone systems (Horizon, Voxone, iPECS), FTTP and SoGEA, leased lines, 4G/5G, GigaAir, Dojo card machines, laptops, mobiles and cyber security.",
+      "tags": [
+        "products",
+        "range",
+        "horizon",
+        "voxone",
+        "ipecs",
+        "fttp",
+        "sogea",
+        "leased line",
+        "gigaair",
+        "dojo"
+      ]
+    },
+    {
+      "id": "terms-conditions",
+      "title": "Terms and Conditions (Apr 2026)",
+      "category": "Company",
+      "kind": "Policy",
+      "file": "company/Terms and Conditions (Apr 2026).pdf",
+      "summary": "Telecom Networks' terms: providing the service, first line checks and chargeable engineer visits, equipment, charges, cancellation, liability and disputes.",
+      "tags": [
+        "terms",
+        "conditions",
+        "first line checks",
+        "engineer",
+        "call-out",
+        "charges",
+        "cancellation",
+        "no fault found"
+      ]
+    },
+    {
+      "id": "cyber-security",
+      "title": "Cyber Security Information",
+      "category": "Company",
+      "kind": "Brochure",
+      "file": "company/Cyber Security Information.pdf",
+      "original": "company/Cyber Security Information.docx",
+      "summary": "Cyber services and pricing: penetration testing, vulnerability scanning, dark web monitoring, incident response planning, phishing simulations, Cyber Essentials, awareness training, 24/7 threat protection.",
+      "tags": [
+        "cyber security",
+        "pen testing",
+        "phishing",
+        "cyber essentials",
+        "dark web",
+        "nessus",
+        "sophos"
+      ]
+    },
+    {
+      "id": "horizon-end-user-guide",
+      "title": "Horizon End User Guide v2.2",
+      "category": "Horizon",
+      "kind": "User guide",
+      "file": "horizon/Horizon End User Guide v2.2.pdf",
+      "summary": "What a Horizon user can do for themselves on the Horizon website: signing in and changing the password, the dashboard, click to dial, call forwarding, profile status and call profiles, call statistics, mobile twinning, the directory, blocking callers, missed-call notifications, busy lamps, speed dials and outgoing call settings.",
+      "tags": [
+        "horizon",
+        "end user",
+        "password",
+        "call forwarding",
+        "voicemail",
+        "do not disturb",
+        "availability profile",
+        "portal"
+      ]
+    },
+    {
+      "id": "horizon-call-centre-user-guide",
+      "title": "Horizon Call Centre User Guide v1.0",
+      "category": "Horizon",
+      "kind": "User guide",
+      "file": "horizon/Horizon Call Centre User Guide v1.0.pdf",
+      "summary": "Creating and customising a Horizon call centre: agent settings and unavailable codes, ring order, overflow, stranded and bounced calls, announcements, music on hold, call recording, agent states on handsets and in the portal, and the agent and supervisor clients.",
+      "tags": [
+        "horizon",
+        "call centre",
+        "call queue",
+        "agent",
+        "supervisor",
+        "acd",
+        "queue"
+      ]
+    },
+    {
+      "id": "horizon-okta",
+      "title": "Horizon Okta App Configuration Guide",
+      "category": "Horizon",
+      "kind": "Admin guide",
+      "file": "horizon/Horizon Okta App Configuration Guide.pdf",
+      "summary": "Setting up the Okta Horizon app so Horizon users are created, updated and removed automatically from Okta, including the restrictions that apply.",
+      "tags": [
+        "horizon",
+        "okta",
+        "provisioning",
+        "single sign-on",
+        "sso",
+        "active directory"
+      ]
+    },
+    {
+      "id": "collaborate-pc",
+      "title": "Horizon Collaborate PC Client Guide v1.0",
+      "category": "Collaborate & Apps",
+      "kind": "User guide",
+      "file": "collaborate/Horizon Collaborate PC Client Guide v1.0.pdf",
+      "summary": "The Horizon Collaborate desktop client: system requirements, signing in, headsets, calls and call history, contacts, conference calls in My Room (screen sharing and guests), voicemail, chat and file transfer.",
+      "tags": [
+        "collaborate",
+        "pc client",
+        "desktop",
+        "softphone",
+        "presence",
+        "chat",
+        "meetings"
+      ]
+    },
+    {
+      "id": "collaborate-ios",
+      "title": "Horizon Collaborate iOS Soft Phone Guide v2.0",
+      "category": "Collaborate & Apps",
+      "kind": "User guide",
+      "file": "collaborate/Horizon Collaborate iOS Soft Phone Guide v2.0.pdf",
+      "summary": "Collaborate on iPhone: requirements, number presentation, installing and signing in, presence, contacts, calls and chat, pulling a call, call forwarding, Do Not Disturb, twinning, remote office and troubleshooting mobile data.",
+      "tags": [
+        "collaborate",
+        "ios",
+        "iphone",
+        "ipad",
+        "mobile app",
+        "softphone"
+      ]
+    },
+    {
+      "id": "collaborate-android",
+      "title": "Horizon Collaborate Android Soft Phone Guide v3.0",
+      "category": "Collaborate & Apps",
+      "kind": "User guide",
+      "file": "collaborate/Horizon Collaborate Android Soft Phone Guide v3.0.pdf",
+      "summary": "Collaborate on Android: signing in and password problems, calls and call history, the directory, pulling a call, voicemail, Do Not Disturb, call forwarding and troubleshooting settings.",
+      "tags": [
+        "collaborate",
+        "android",
+        "samsung",
+        "mobile app",
+        "softphone"
+      ]
+    },
+    {
+      "id": "collaborate-quick-start",
+      "title": "Horizon Collaborate Quick Guide: Getting Started",
+      "category": "Collaborate & Apps",
+      "kind": "Quick guide",
+      "file": "collaborate/Horizon Collaborate Quick Guide - Getting Started v2.pdf",
+      "summary": "Signing in to Collaborate (a different password from the portal login), signing out and the main window.",
+      "tags": [
+        "collaborate",
+        "sign in",
+        "password",
+        "getting started"
+      ]
+    },
+    {
+      "id": "collaborate-quick-im",
+      "title": "Horizon Collaborate Quick Guide: IM, Presence and Contacts",
+      "category": "Collaborate & Apps",
+      "kind": "Quick guide",
+      "file": "collaborate/Horizon Collaborate Quick Guide - IM Presence and Contacts v2.pdf",
+      "summary": "Finding people, adding contacts to the buddy list, presence and instant messages in Collaborate.",
+      "tags": [
+        "collaborate",
+        "chat",
+        "instant message",
+        "presence",
+        "contacts",
+        "buddy list"
+      ]
+    },
+    {
+      "id": "collaborate-quick-voice",
+      "title": "Horizon Collaborate Quick Guide: Voice Calling",
+      "category": "Collaborate & Apps",
+      "kind": "Quick guide",
+      "file": "collaborate/Horizon Collaborate Quick Guide - Voice Calling v2.pdf",
+      "summary": "Calling a contact from Collaborate and the in-call controls: hang up, mute, hold, transfer and conference.",
+      "tags": [
+        "collaborate",
+        "voice call",
+        "transfer",
+        "hold",
+        "mute",
+        "conference"
+      ]
+    },
+    {
+      "id": "collaborate-quick-conference",
+      "title": "Horizon Collaborate Quick Guide: Plan and Manage a Conference",
+      "category": "Collaborate & Apps",
+      "kind": "Quick guide",
+      "file": "collaborate/Horizon Collaborate Quick Guide - Plan and Manage a Conference v2.pdf",
+      "summary": "Using your permanent MyRoom for meetings, inviting people and managing a conference in Collaborate.",
+      "tags": [
+        "collaborate",
+        "conference",
+        "myroom",
+        "meeting",
+        "screen share"
+      ]
+    },
+    {
+      "id": "horizon-pc-softclient",
+      "title": "Horizon PC Softclient User Guide v4.0 (older client)",
+      "category": "Collaborate & Apps",
+      "kind": "User guide",
+      "file": "collaborate/Horizon PC Softclient User Guide v4.0.pdf",
+      "summary": "The older Horizon PC soft client (before Collaborate): requirements, installing and signing in, audio devices, contacts and directories, calls and conferences, visual voicemail, Outlook integration and pulling a call.",
+      "tags": [
+        "horizon",
+        "pc softclient",
+        "soft client",
+        "desktop",
+        "legacy"
+      ]
+    },
+    {
+      "id": "horizon-ios-softclient",
+      "title": "Horizon iOS Soft Client User Guide v3 (older client)",
+      "category": "Collaborate & Apps",
+      "kind": "User guide",
+      "file": "collaborate/Horizon iOS Soft Client User Guide v3.pdf",
+      "summary": "The older Horizon soft client on iPhone (before Collaborate): requirements, installing and signing in, contacts, calls, pulling a call, call settings, sign-in problems and mobile data troubleshooting.",
+      "tags": [
+        "horizon",
+        "ios",
+        "iphone",
+        "soft client",
+        "legacy"
+      ]
+    },
+    {
+      "id": "horizon-android-softclient",
+      "title": "Horizon Android Soft Client User Guide v5.0 (older client)",
+      "category": "Collaborate & Apps",
+      "kind": "User guide",
+      "file": "collaborate/Horizon Android Soft Client User Guide v5.0.pdf",
+      "summary": "The older Horizon soft client on Android (before Collaborate): installing, signing in, calls and call settings.",
+      "tags": [
+        "horizon",
+        "android",
+        "soft client",
+        "legacy"
+      ]
+    },
+    {
+      "id": "yealink-t46u-full",
+      "title": "Yealink T46U User Guide v1 (Horizon)",
+      "category": "Yealink",
+      "kind": "User guide",
+      "file": "yealink/Yealink T46U User Guide v1.pdf",
+      "summary": "The Yealink T46U on Horizon: what's in the box, assembly, LEDs and icons, making and answering calls, the directory and call history, mute, hold, call forwarding, and blind and warm transfer.",
+      "tags": [
+        "yealink",
+        "t46u",
+        "desk phone",
+        "transfer",
+        "voicemail",
+        "keys"
+      ]
+    },
+    {
+      "id": "yealink-w73p-quick",
+      "title": "Yealink W73P Quick Reference Guide",
+      "category": "Yealink",
+      "kind": "Quick guide",
+      "file": "yealink/Yealink W73P Quick Reference Guide.pdf",
+      "summary": "One-page reference for the W73P cordless: keys, LED indicator, answering and making calls.",
+      "tags": [
+        "yealink",
+        "w73p",
+        "w73h",
+        "cordless",
+        "dect",
+        "keys"
+      ]
+    },
+    {
+      "id": "yealink-w52p-full",
+      "title": "Yealink W52P Full User Guide v1.0 (Horizon)",
+      "category": "Yealink",
+      "kind": "User guide",
+      "file": "yealink/Yealink W52P Full User Guide v1.0 (Horizon).pdf",
+      "summary": "The Yealink W52P cordless on Horizon: setting up, registering handsets, firmware, the menus, intercom, voicemail, directory and phone settings, repeater mode, and hold, transfer, conference, forwarding and Do Not Disturb.",
+      "tags": [
+        "yealink",
+        "w52p",
+        "w52h",
+        "w56h",
+        "cordless",
+        "dect"
+      ]
+    },
+    {
+      "id": "yealink-w52p-manual",
+      "title": "Yealink W52P Phone User Guide (manufacturer)",
+      "category": "Yealink",
+      "kind": "Manufacturer manual",
+      "file": "yealink/Yealink W52P Phone User Guide (Yealink).pdf",
+      "summary": "Yealink's full manual for the W52P DECT phone: every menu, setting and feature.",
+      "tags": [
+        "yealink",
+        "w52p",
+        "cordless",
+        "dect",
+        "manual"
+      ]
+    },
+    {
+      "id": "yealink-w52p-quick",
+      "title": "Yealink W52P Quick Reference Guide",
+      "category": "Yealink",
+      "kind": "Quick guide",
+      "file": "yealink/Yealink W52P Quick Reference Guide.pdf",
+      "summary": "One-page reference for the W52P cordless: keys, screen and everyday calls.",
+      "tags": [
+        "yealink",
+        "w52p",
+        "cordless",
+        "keys"
+      ]
+    },
+    {
+      "id": "handset-mac-address",
+      "title": "How to Find the MAC Address of a New Handset",
+      "category": "Horizon",
+      "kind": "Quick guide",
+      "file": "horizon/How to Find the MAC Address of a New Handset.pdf",
+      "summary": "What a MAC address is, how it is written, and where to find it on a new handset or base station so the phone can be assigned to a user on Horizon.",
+      "tags": [
+        "mac address",
+        "mac",
+        "new handset",
+        "assign phone",
+        "label",
+        "base station",
+        "horizon"
+      ]
+    },
+    {
+      "id": "polycom-vvx250-full",
+      "title": "Polycom VVX250 Full User Guide (Horizon)",
+      "category": "Polycom",
+      "kind": "User guide",
+      "file": "polycom/Polycom VVX250 Full User Guide (Horizon).pdf",
+      "summary": "The Polycom VVX250 on Horizon: setting up, keys and status icons, placing, holding and transferring calls, rejecting calls, Do Not Disturb, call forwarding and conference calls.",
+      "tags": [
+        "polycom",
+        "vvx250",
+        "vvx 250",
+        "desk phone"
+      ]
+    },
+    {
+      "id": "polycom-vvx250-quick",
+      "title": "Polycom VVX250 Quick Reference Guide",
+      "category": "Polycom",
+      "kind": "Quick guide",
+      "file": "polycom/Polycom VVX250 Quick Reference Guide.pdf",
+      "summary": "One-page reference for the VVX250: making calls, calling from the directory and in-call keys.",
+      "tags": [
+        "polycom",
+        "vvx250",
+        "quick reference"
+      ]
+    },
+    {
+      "id": "polycom-vvx450-full",
+      "title": "Polycom VVX450 Full User Guide (Horizon)",
+      "category": "Polycom",
+      "kind": "User guide",
+      "file": "polycom/Polycom VVX450 Full User Guide (Horizon).pdf",
+      "summary": "The Polycom VVX450 on Horizon: setting up, keys and status icons, placing, holding and transferring calls, rejecting calls, Do Not Disturb, call forwarding and conference calls.",
+      "tags": [
+        "polycom",
+        "vvx450",
+        "vvx 450",
+        "desk phone"
+      ]
+    },
+    {
+      "id": "polycom-vvx450-quick",
+      "title": "Polycom VVX450 Quick Reference Guide",
+      "category": "Polycom",
+      "kind": "Quick guide",
+      "file": "polycom/Polycom VVX450 Quick Reference Guide.pdf",
+      "summary": "One-page reference for the VVX450: making calls, calling from the directory and in-call keys.",
+      "tags": [
+        "polycom",
+        "vvx450",
+        "quick reference"
+      ]
+    },
+    {
+      "id": "polycom-vvx410-full",
+      "title": "Polycom VVX410 Full User Guide (Horizon)",
+      "category": "Polycom",
+      "kind": "User guide",
+      "file": "polycom/Polycom VVX410 Full User Guide (Horizon).pdf",
+      "summary": "The Polycom VVX410 on Horizon: home, lines and calls views, icons, answering and placing calls, three-way calls, forwarding, rejecting and diverting calls, and Do Not Disturb.",
+      "tags": [
+        "polycom",
+        "vvx410",
+        "vvx 410",
+        "desk phone"
+      ]
+    },
+    {
+      "id": "polycom-vvx410-quick",
+      "title": "Polycom VVX410 Quick User Guide",
+      "category": "Polycom",
+      "kind": "Quick guide",
+      "file": "polycom/Polycom VVX410 Quick User Guide.pdf",
+      "summary": "Two-page reference for the VVX400 and VVX410: phone views, calls, hold, transfer and conference.",
+      "tags": [
+        "polycom",
+        "vvx410",
+        "vvx400",
+        "quick reference"
+      ]
+    },
+    {
+      "id": "polycom-vvx411-full",
+      "title": "Polycom VVX411 Full User Guide v1.1 (Horizon)",
+      "category": "Polycom",
+      "kind": "User guide",
+      "file": "polycom/Polycom VVX411 Full User Guide v1.1 (Horizon).pdf",
+      "summary": "The Polycom VVX411 on Horizon: setting up, keys, the phone views and icons, answering and placing calls, redial and three-way calls.",
+      "tags": [
+        "polycom",
+        "vvx411",
+        "vvx 411",
+        "desk phone"
+      ]
+    },
+    {
+      "id": "polycom-vvx500-600-full",
+      "title": "Polycom VVX500 and VVX600 Full User Guide (Horizon)",
+      "category": "Polycom",
+      "kind": "User guide",
+      "file": "polycom/Polycom VVX500 and VVX600 Full User Guide (Horizon).pdf",
+      "summary": "The Polycom VVX500 and VVX600 on Horizon: setting up, keys, the phone views and icons, answering and placing calls, three-way calls, voicemail and recent calls.",
+      "tags": [
+        "polycom",
+        "vvx500",
+        "vvx600",
+        "touchscreen",
+        "desk phone"
+      ]
+    },
+    {
+      "id": "polycom-vvx300-310-manual",
+      "title": "Polycom VVX300 and VVX310 User Guide (manufacturer)",
+      "category": "Polycom",
+      "kind": "Manufacturer manual",
+      "file": "polycom/Polycom VVX300 and VVX310 User Guide (Polycom).pdf",
+      "summary": "Polycom's full manual for the VVX300 and VVX310: every key, menu, setting and feature.",
+      "tags": [
+        "polycom",
+        "vvx300",
+        "vvx310",
+        "manual"
+      ]
+    },
+    {
+      "id": "polycom-vvx400-410-manual",
+      "title": "Polycom VVX400 and VVX410 User Guide (manufacturer)",
+      "category": "Polycom",
+      "kind": "Manufacturer manual",
+      "file": "polycom/Polycom VVX400 and VVX410 User Guide (Polycom).pdf",
+      "summary": "Polycom's full manual for the VVX400 and VVX410: every key, menu, setting and feature.",
+      "tags": [
+        "polycom",
+        "vvx400",
+        "vvx410",
+        "manual"
+      ]
+    },
+    {
+      "id": "polycom-vvx500-600-manual",
+      "title": "Polycom VVX500 and VVX600 User Guide (manufacturer)",
+      "category": "Polycom",
+      "kind": "Manufacturer manual",
+      "file": "polycom/Polycom VVX500 and VVX600 User Guide (Polycom).pdf",
+      "summary": "Polycom's full manual for the VVX500 and VVX600: every screen, setting and feature.",
+      "tags": [
+        "polycom",
+        "vvx500",
+        "vvx600",
+        "manual"
+      ]
+    },
+    {
+      "id": "polycom-ip5000-manual",
+      "title": "Polycom SoundStation IP5000 User Guide (manufacturer)",
+      "category": "Polycom",
+      "kind": "Manufacturer manual",
+      "file": "polycom/Polycom SoundStation IP5000 User Guide (Polycom).pdf",
+      "summary": "Polycom's full manual for the SoundStation IP5000 conference phone.",
+      "tags": [
+        "polycom",
+        "soundstation",
+        "ip5000",
+        "conference phone",
+        "manual"
+      ]
+    },
+    {
+      "id": "cisco-8800-full",
+      "title": "Cisco IP Phone 8841, 8851 and 8861 Full User Guide (Horizon)",
+      "category": "Cisco",
+      "kind": "User guide",
+      "file": "cisco/Cisco IP Phone 8841 8851 8861 Full User Guide (Horizon).pdf",
+      "summary": "The Cisco 8841, 8851 and 8861 on Horizon: setting up and connecting, keys and line keys, busy lamp fields, making and answering calls, Do Not Disturb and call park.",
+      "tags": [
+        "cisco",
+        "8841",
+        "8851",
+        "8861",
+        "cp-8841",
+        "desk phone"
+      ]
+    },
+    {
+      "id": "horizon-integrator",
+      "title": "Horizon Integrator User Guide v2.0",
+      "category": "Integrator & Reporting",
+      "kind": "User guide",
+      "file": "integrator/Horizon Integrator User Guide v2.0.pdf",
+      "summary": "Horizon Integrator on a PC: installation and supported versions, Skype for Business, the tray menu and phone window, call control, forwarding, Do Not Disturb, presence, settings and known issues.",
+      "tags": [
+        "integrator",
+        "horizon",
+        "crm",
+        "screen pop",
+        "tapi",
+        "pc"
+      ]
+    },
+    {
+      "id": "horizon-receptionist-console",
+      "title": "Horizon Receptionist Console User Guide v1.0",
+      "category": "Integrator & Reporting",
+      "kind": "User guide",
+      "file": "integrator/Horizon Receptionist Console User Guide v1.0.pdf",
+      "summary": "The Horizon Receptionist Console: fixed, soft and multi-site set-ups, the console and its settings, contacts, queued calls, managing multiple calls, picking up monitored extensions, speed dials, call history and transferring.",
+      "tags": [
+        "receptionist console",
+        "receptionist",
+        "attendant",
+        "busy lamp",
+        "transfer",
+        "horizon"
+      ]
+    },
+    {
+      "id": "integrator-salesforce",
+      "title": "Horizon Integrator Salesforce Add-in Guide v2.0",
+      "category": "Integrator & Reporting",
+      "kind": "Set-up guide",
+      "file": "integrator/Horizon Integrator Salesforce Add-in Guide v2.0.pdf",
+      "summary": "Connecting Horizon Integrator to Salesforce so calls pop the matching record.",
+      "tags": [
+        "integrator",
+        "salesforce",
+        "crm",
+        "screen pop"
+      ]
+    },
+    {
+      "id": "integrator-emis",
+      "title": "Horizon Integrator EMIS Add-in Guide v1.0",
+      "category": "Integrator & Reporting",
+      "kind": "Set-up guide",
+      "file": "integrator/Horizon Integrator EMIS Add-in Guide v1.0.pdf",
+      "summary": "Connecting Horizon Integrator to EMIS (GP surgeries): what you need and how to configure it.",
+      "tags": [
+        "integrator",
+        "emis",
+        "gp",
+        "surgery",
+        "crm",
+        "screen pop"
+      ]
+    },
+    {
+      "id": "akixi-reporting",
+      "title": "Akixi Call Reporting Guide v1.2",
+      "category": "Integrator & Reporting",
+      "kind": "User guide",
+      "file": "integrator/Akixi Call Reporting Guide v1.2.pdf",
+      "summary": "Akixi call reporting: logging on, running, filtering, exporting and editing reports, wallboards, lost calls, hunt group and DDI reports, and call control from a report.",
+      "tags": [
+        "akixi",
+        "call reporting",
+        "reports",
+        "statistics",
+        "wallboard"
+      ]
+    },
+    {
+      "id": "inbound-user-guide",
+      "title": "Inbound User Guide v1.0",
+      "category": "Inbound & SIP Trunks",
+      "kind": "User guide",
+      "file": "inbound-sip/Inbound User Guide v1.0.pdf",
+      "summary": "Gamma Inbound for non-geographic numbers: the service, the Inbound portal, pointing a number, announcements, voicemail, statistics, Goto features, IVR, call recording, diverts, call whisper and email reports.",
+      "tags": [
+        "inbound",
+        "0800",
+        "0300",
+        "non-geographic",
+        "call plan",
+        "routing"
+      ]
+    },
+    {
+      "id": "inbound-validation-errors",
+      "title": "Inbound Call Plan Validation Errors v1.0",
+      "category": "Inbound & SIP Trunks",
+      "kind": "Fault guide",
+      "file": "inbound-sip/Inbound Call Plan Validation Errors v1.0.pdf",
+      "summary": "Every Inbound call plan validation error, what it means and how to fix it so the plan can be activated.",
+      "tags": [
+        "inbound",
+        "call plan",
+        "validation error",
+        "activate",
+        "fault"
+      ]
+    },
+    {
+      "id": "inbound-app",
+      "title": "Inbound App User Guide v1.0",
+      "category": "Inbound & SIP Trunks",
+      "kind": "User guide",
+      "file": "inbound-sip/Inbound App User Guide v1.0.pdf",
+      "summary": "The Inbound app for iPhone and Android: downloading, pointing a number, viewing calls and common questions.",
+      "tags": [
+        "inbound",
+        "ios",
+        "iphone",
+        "app",
+        "routing"
+      ]
+    },
+    {
+      "id": "sip-call-manager-iphone",
+      "title": "SIP Trunk Call Manager iPhone App User Guide v1.0",
+      "category": "Inbound & SIP Trunks",
+      "kind": "User guide",
+      "file": "inbound-sip/SIP Trunk Call Manager iPhone App User Guide v1.0.pdf",
+      "summary": "The SIP Trunk Call Manager app for iPhone: My Numbers, Business Continuity, options and the Follow Me service.",
+      "tags": [
+        "sip trunk",
+        "call manager",
+        "business continuity",
+        "divert",
+        "iphone",
+        "app"
+      ]
+    },
+    {
+      "id": "sip-call-manager-bulk",
+      "title": "SIP Trunk Call Manager Bulk App User Guide v1.0",
+      "category": "Inbound & SIP Trunks",
+      "kind": "Admin guide",
+      "file": "inbound-sip/SIP Trunk Call Manager Bulk App User Guide v1.0.pdf",
+      "summary": "Administrator and user rights in SIP Trunk Call Manager, and creating or deleting app users in bulk.",
+      "tags": [
+        "sip trunk",
+        "call manager",
+        "bulk",
+        "users",
+        "admin"
+      ]
+    },
+    {
+      "id": "broadband-tech-support",
+      "title": "Broadband End User Technical Support Guide v1.1",
+      "category": "Routers & Broadband",
+      "kind": "Fault guide",
+      "file": "routers-broadband/Broadband End User Technical Support Guide v1.1.pdf",
+      "summary": "Gamma's first-line checks for broadband and phone lines: preliminary line tests, no dial tone, dropped calls, poor call quality, broadband traffic priority, and how to raise a broadband fault.",
+      "tags": [
+        "broadband",
+        "fault",
+        "first line checks",
+        "router",
+        "speed",
+        "no connection",
+        "gamma"
+      ]
+    },
+    {
+      "id": "ethernet-tech-support",
+      "title": "Ethernet End User Technical Support Guide v1.1",
+      "category": "Routers & Broadband",
+      "kind": "Fault guide",
+      "file": "routers-broadband/Ethernet End User Technical Support Guide v1.1.pdf",
+      "summary": "Ethernet circuit faults: fault types, fibre (EAD) and EFM hard down, packet loss and high latency, trace routes, and REIN and SHINE interference on EFM.",
+      "tags": [
+        "ethernet",
+        "leased line",
+        "circuit",
+        "fault",
+        "ntu",
+        "router",
+        "gamma"
+      ]
+    },
+    {
+      "id": "loa-form",
+      "title": "Customer Letter of Authority (LOA)",
+      "category": "Company",
+      "kind": "Form",
+      "file": "company/Customer Letter of Authority (LOA).pdf",
+      "original": "company/Customer Letter of Authority (LOA).docx",
+      "summary": "The blank two-page letter of authority for porting numbers to Gamma: current and new retailer, site address, numbers to port, company details and the customer's signature. Use the LOA filler in the Toolkit to fill it in.",
+      "tags": [
+        "loa",
+        "letter of authority",
+        "cloa",
+        "porting",
+        "port",
+        "form",
+        "signature"
+      ]
+    },
+    {
+      "id": "crf-form",
+      "title": "Customer Requirement Form (CRF)",
+      "category": "Company",
+      "kind": "Form",
+      "file": "company/Customer Requirement Form (CRF).pdf",
+      "original": "company/Customer Requirement Form (CRF).xlsx",
+      "summary": "The spreadsheet customers fill in so their phone system can be programmed: staff and handsets, voicemail, numbers to port, auto attendant, opening hours, hold music, pick-up groups and a company directory.",
+      "tags": [
+        "crf",
+        "customer requirement form",
+        "programming",
+        "new system",
+        "onboarding",
+        "spreadsheet",
+        "auto attendant"
+      ]
+    }
+  ]
+}
