@@ -18,6 +18,12 @@ Settings and macros live in `%APPDATA%\Praxis\config.json`; the activity log is 
 
 ## Features
 
+- **Home:** clock and date, every button one click away, pinned templates, recent notes. `Ctrl K` searches
+  buttons, notes and templates; `Alt 1` to `Alt 5` open each page.
+- **Notes** and **Templates:** search, autosave, copy in one click, open a template in your mail app. Templates fill
+  `{date}`, `{day}`, `{time}`, `{name}` and `{first}` when copied. Pin templates to Home.
+- **Button bar:** your buttons in a small window that stays on top, and steps aside during a switch.
+- **Appearance:** match the computer, light, dark or high contrast, and a larger text size.
 - **Switch:** set up in one card. Each screen can show its own app or a website (opened in its own browser
   window, closed again on return). Changes save as you make them.
 - **Discreet:** neutral names, no notifications, optional hidden tray icon, history kept in memory only unless you

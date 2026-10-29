@@ -31,6 +31,7 @@ type Settings struct {
 	NotifyOnRun      bool           `json:"notifyOnRun"`
 	HideTray         bool           `json:"hideTray"` // discreet: no tray icon; relaunch the exe to open the deck
 	KeepLog          bool           `json:"keepLog"`  // write activity history to disk (off: memory only)
+	Name             string         `json:"name"`     // fills {name} in templates
 	PrewarmApps      bool           `json:"prewarmApps"`
 	Port             int            `json:"port"`
 	Remote           RemoteSettings `json:"remote"`
@@ -158,6 +159,10 @@ func (c *Config) Normalize() error {
 	}
 	s := &c.Settings
 	s.Remote.HasPIN = s.Remote.PINHash != ""
+	s.Name = strings.TrimSpace(s.Name)
+	if err := checkLen("name", s.Name, 80); err != nil {
+		return err
+	}
 	if s.Port == 0 {
 		s.Port = defaultPort
 	}

@@ -17,6 +17,7 @@ type Item struct {
 	Title   string `json:"title"`
 	Subject string `json:"subject,omitempty"`
 	Body    string `json:"body"`
+	Pinned  bool   `json:"pinned,omitempty"`
 	Updated int64  `json:"updated"` // unix ms
 }
 
